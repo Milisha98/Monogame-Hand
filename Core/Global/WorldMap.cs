@@ -1,0 +1,8 @@
+﻿namespace Hands.Core;
+internal class WorldMap
+{
+    //public List<Tile> Floor { get; set; } = new();
+    //public List<Tile> Walls { get; set; } = new();
+    //public List<Tile> WallShadows { get; set; } = new();
+
+}
