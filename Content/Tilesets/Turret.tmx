@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="3">
+ <tileset firstgid="1" source="TileSet32.tsx"/>
+ <tileset firstgid="14" source="Turret.tsx"/>
+ <layer id="1" name="Floor" width="10" height="10">
+  <data encoding="csv">
+5,5,5,5,5,5,5,5,5,5,
+5,5,5,5,5,5,5,5,5,5,
+5,5,5,5,5,5,5,5,5,5,
+5,5,5,1,2,2,3,5,5,5,
+5,5,5,4,13,13,6,5,5,5,
+5,5,5,4,13,13,6,5,5,5,
+5,5,5,7,8,8,9,5,5,5,
+5,5,5,5,5,5,5,5,5,5,
+5,5,5,5,5,5,5,5,5,5,
+5,5,5,5,5,5,5,5,5,5
+</data>
+ </layer>
+ <objectgroup id="2" name="Turret" class="Turret">
+  <properties>
+   <property name="RoF" type="float" value="2"/>
+  </properties>
+  <object id="1" gid="16" x="128" y="192" width="64" height="64"/>
+ </objectgroup>
+</map>

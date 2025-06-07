@@ -1,5 +1,6 @@
 ﻿using System;
 using Hands.Core;
+using Hands.GameObjects.Tiles;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,15 +12,15 @@ internal class DefaultScene : IScene
     const float MouseZoomSpeed  = 0.01f;
 
     // Tiles
-   //private readonly Tiler _tiler = new();
+   private readonly Tiler _tiler = new();
 
 
     public ScenesEnum Scene => ScenesEnum.Default;
 
     public void LoadContent(ContentManager contentManager)
     {
-        //_tiler.LoadContent(contentManager);
-        Global.World.Camera.Position = new Vector2(30 * Global.TileDimension, 20 * Global.TileDimension);       // Center
+        _tiler.LoadContent(contentManager);
+        Global.World.Camera.Position = new Vector2(Global.TileDimension * 5, Global.TileDimension * 5);       // Center
     }
     public void Update(GameTime gameTime)
     {
@@ -62,20 +63,15 @@ internal class DefaultScene : IScene
         Global.World.Camera.Zoom = zoom;
     }
 
-    public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+    public void Draw(SpriteBatch spriteBatch)
     {
-        //_tiler.Draw(spriteBatch, gameTime);
+        _tiler.Draw(spriteBatch);
     }
     public void OnChangeSceneStart()
     {
     }
 
     public void OnChangeSceneStop()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Draw(SpriteBatch spriteBatch)
     {
         throw new NotImplementedException();
     }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Hands.Core;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -6,28 +6,24 @@ namespace Hands;
 
 public class HandsGame : Game
 {
-    private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
-
     public HandsGame()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        Global.Graphics = new();
+        Global.Graphics.Initialize(this);
+
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-
+        Core.Tiles.TiledReader.Load();
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // TODO: use this.Content to load your game content here
+        Global.Scene.LoadContent(Content);
     }
 
     protected override void Update(GameTime gameTime)
@@ -35,17 +31,15 @@ public class HandsGame : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
-
+        Global.Scene.Update(gameTime);
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
-    {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
-
+    {        
+        Global.Graphics.Clear();
+        Global.Scene.Draw(Global.Graphics.SpriteBatch);
+        Global.Graphics.DrawAndScaleFromBackBuffer();
         base.Draw(gameTime);
     }
 }
