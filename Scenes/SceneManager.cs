@@ -28,11 +28,13 @@ internal class SceneManager : IGameObject
     public void LoadContent(ContentManager contentManager)
     {
         _defaultScene.LoadContent(contentManager);
+        Global.World.TurretManager.LoadContent(contentManager);
     }
 
     public void Update(GameTime gameTime)
     {
         _currentScene?.Update(gameTime);
+
     }
     public void Draw(SpriteBatch spriteBatch)
     {

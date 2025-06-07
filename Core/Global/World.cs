@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Hands.GameObjects.Enemies.Turret;
 
 namespace Hands.Core;
 internal class World
@@ -10,4 +6,7 @@ internal class World
     public Camera2D Camera { get; set; } = new Camera2D();
 
     public WorldMap Map { get; set; } = new();
+
+    // Managers
+    public TurretManager TurretManager { get; set; } = new TurretManager();
 }

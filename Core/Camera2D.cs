@@ -30,6 +30,11 @@ internal class Camera2D
         Position = position - new Vector2(_bounds.Width * 0.5f, _bounds.Height * 0.5f);
     }
 
+    public Vector2 WorldToScreenPosition(Vector2 position)
+    {
+        return Vector2.Transform(position, ViewMatrix);
+    }
+
     public Matrix ViewMatrix
     {
         get =>

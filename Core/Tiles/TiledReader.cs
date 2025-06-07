@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Hands.GameObjects.Enemies.Turret;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -12,16 +12,16 @@ internal static class TiledReader
     public static void Load()
     {
         var doc = XElement.Load(DataFile);
-        
+
         string version = doc.Attribute("version").Value;
         if (version != "1.10")
         {
             throw new VersionNotFoundException("This version of TiledReader.cs works with Tiled files of version 1.10.");
         }
 
-        int width  = int.Parse(doc.Attribute("width").Value);
+        int width = int.Parse(doc.Attribute("width").Value);
         int height = int.Parse(doc.Attribute("height").Value);
-        
+
         var layers = doc.Elements("layer");
 
         var worldMap = new WorldMap();
@@ -30,22 +30,49 @@ internal static class TiledReader
             int layerID = int.Parse(layer.Attribute("id").Value);
             string layerName = layer.Attribute("name").Value;
             var tiles = LoadMapData(layer.Element("data")).ToList();
-            
-            switch(layerID)
+
+            switch (layerID)
             {
                 case 1:
-                    worldMap.Floor = tiles; 
+                    worldMap.Floor = tiles;
                     break;
-                //case 2:
-                //    worldMap.Walls = tiles; 
-                //    break;
-                //case 3:
-                //    worldMap.WallShadows = tiles;
-                //    break;
+                    //case 2:
+                    //    worldMap.Walls = tiles; 
+                    //    break;
+                    //case 3:
+                    //    worldMap.WallShadows = tiles;
+                    //    break;
+
             }
         }
 
+        ReadTurrets(doc);
+
         Global.World.Map = worldMap;
+    }
+
+    private static void ReadTurrets(XElement doc)
+    {
+        var objectGroups = doc.Elements("objectgroup");
+        foreach (var group in objectGroups)
+        {
+            string className = group.Attribute("class").Value;
+            if (className != "Turret") continue;
+
+            foreach (XElement o in group.Elements("object"))
+            {
+                TurretInfo t = new
+                (
+                    ID:     o.Attribute("id").Value,
+                    X:      int.Parse(o.Attribute("x").Value),
+                    Y:      int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
+                    RoF:    o.ReadPropertyAsFloat("RoF", 2f)
+                );
+
+                Global.World.TurretManager.Register(t);
+            }
+        }
+        
     }
 
     private static IEnumerable<Tile> LoadMapData(XElement data)
@@ -63,13 +90,43 @@ internal static class TiledReader
             }
         }
     }
+
+
+
+}
+
+internal static class XElementExtensions
+{
+    internal static string ReadProperty(this XElement parent, string propertyName)
+    {
+        var properties = parent.Element("properties");
+        if (properties == null) return null;
+        foreach (XElement property in properties.Elements("property"))
+        {
+            string name = property.Attribute("name").Value;
+            if (name == propertyName)
+            {
+                string value = property.Attribute("value").Value;
+                return value;
+            }
+        }
+        return null;
+    }
+
+    internal static float ReadPropertyAsFloat(this XElement parent, string propertyName, float defaultValue = 0f)
+    {
+        string value = ReadProperty(parent, propertyName);
+        if (string.IsNullOrEmpty(value)) return 0f;
+        if (float.TryParse(value, out float result)) return result;
+        return defaultValue;
+    }    
+
 }
 
 
-
-record Tile(Vector2 TilePosition, int Frame)
+public record Tile(Vector2 TilePosition, int Frame)
 {
-    public Vector2 MapPosition {  get => TilePosition * Global.TileDimension; }
+    public Vector2 MapPosition { get => TilePosition * Global.TileDimension; }
 }
 
 

@@ -17,9 +17,10 @@
 </data>
  </layer>
  <objectgroup id="2" name="Turret" class="Turret">
-  <properties>
-   <property name="RoF" type="float" value="2"/>
-  </properties>
-  <object id="1" gid="16" x="128" y="192" width="64" height="64"/>
+  <object id="1" gid="15" x="128" y="192" width="64" height="64">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

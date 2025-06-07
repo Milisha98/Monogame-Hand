@@ -24,10 +24,11 @@ internal class DefaultScene : IScene
     }
     public void Update(GameTime gameTime)
     {
-        MoveCamera();
-        ZoomCamera();
+        //MoveCamera();
+        //ZoomCamera();
 
         MouseController.Update();
+        Global.World.TurretManager.Update(gameTime);
 
     }
 
@@ -65,7 +66,12 @@ internal class DefaultScene : IScene
 
     public void Draw(SpriteBatch spriteBatch)
     {
+        spriteBatch.Begin(transformMatrix: Global.World.Camera.ViewMatrix);
+
         _tiler.Draw(spriteBatch);
+        Global.World.TurretManager.Draw(spriteBatch);
+
+        spriteBatch.End();
     }
     public void OnChangeSceneStart()
     {
