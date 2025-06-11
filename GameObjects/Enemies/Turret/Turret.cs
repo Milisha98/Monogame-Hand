@@ -2,9 +2,6 @@
 using Hands.Core.Animation;
 using Hands.Core.Sprites;
 
-using System;
-using System.Diagnostics;
-
 namespace Hands.GameObjects.Enemies.Turret;
 
 internal class Turret : IUpdate, IDraw
@@ -31,7 +28,7 @@ internal class Turret : IUpdate, IDraw
             IsActive = false
         };
         _wf.OnStateChanged += state => State = state;
-        _wf.OnCompleted += () => State = TurretState.Active;
+        _wf.OnCompleted += () => State = TurretState.Destroyed;
 
         // TEMP: Wakes up after 1 second
         _wake = new Tween(TimeSpan.FromSeconds(1));
@@ -174,6 +171,12 @@ internal class Turret : IUpdate, IDraw
     private void DrawDestroyed(SpriteBatch spriteBatch)
     {
         if (State != TurretState.Destroyed) return;
+
+        // Draw Destroyed Turret Body
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[8].SourceRectangle, _animationTurretColor);
+
+        // Draw Damage   
+        spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[9].SourceRectangle, _animationTurretColor, DamageRotation, Size64.Center, 1f, SpriteEffects.None, 0);
     }
 
     #endregion
@@ -208,6 +211,7 @@ internal class Turret : IUpdate, IDraw
     internal TurretSprite Sprite => Manager.Sprite;
     internal Vector2 Target { get; private set; } = Vector2.Zero;
     public TurretStyle Style { get; set; } = TurretStyle.Style1; // Default style
+    private float DamageRotation { get; } = Random.Shared.NextSingle() * MathF.Tau;
 
 }
 
