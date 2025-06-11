@@ -55,4 +55,4 @@ internal class TurretSprite
     public Dictionary<int, SpriteFrame> Frames { get; private set; }
 }
 
-internal record TurretInfo(string ID, int X, int Y, float RoF);
+internal record TurretInfo(string ID, int X, int Y, TurretStyle Style, float RoF);

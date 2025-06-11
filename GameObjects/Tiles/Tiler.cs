@@ -3,7 +3,6 @@ using Hands.Core.Sprites;
 using Hands.Core.Tiles;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 namespace Hands.GameObjects.Tiles;
@@ -21,6 +20,7 @@ internal class Tiler : IDraw
     public void Draw(SpriteBatch spriteBatch)
     {
         Draw(spriteBatch, Global.World.Map.Floor);
+        Draw(spriteBatch, Global.World.Map.Shadows);
     }
 
     private void Draw(SpriteBatch spriteBatch, List<Tile> map)

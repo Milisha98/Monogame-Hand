@@ -1,4 +1,5 @@
 ﻿using Hands.GameObjects.Enemies.Turret;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -31,17 +32,14 @@ internal static class TiledReader
             string layerName = layer.Attribute("name").Value;
             var tiles = LoadMapData(layer.Element("data")).ToList();
 
-            switch (layerID)
+            switch (layerName)
             {
-                case 1:
+                case "Floor":
                     worldMap.Floor = tiles;
                     break;
-                    //case 2:
-                    //    worldMap.Walls = tiles; 
-                    //    break;
-                    //case 3:
-                    //    worldMap.WallShadows = tiles;
-                    //    break;
+                case "Shadows":
+                    worldMap.Shadows = tiles;
+                    break;
 
             }
         }
@@ -61,11 +59,13 @@ internal static class TiledReader
 
             foreach (XElement o in group.Elements("object"))
             {
+                string type = o.Attribute("type").Value;
                 TurretInfo t = new
                 (
                     ID:     o.Attribute("id").Value,
                     X:      int.Parse(o.Attribute("x").Value),
                     Y:      int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
+                    Style:  (TurretStyle)Enum.Parse(typeof(TurretStyle), type, true),
                     RoF:    o.ReadPropertyAsFloat("RoF", 2f)
                 );
 

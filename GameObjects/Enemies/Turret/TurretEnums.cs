@@ -7,3 +7,9 @@ public enum TurretState
     Active,
     Destroyed
 }
+
+public enum TurretStyle
+{
+    Style1,
+    Style2
+}
