@@ -20,6 +20,7 @@ internal class Tiler : IDraw
     public void Draw(SpriteBatch spriteBatch)
     {
         Draw(spriteBatch, Global.World.Map.Floor);
+        Draw(spriteBatch, Global.World.Map.Walls);
         Draw(spriteBatch, Global.World.Map.Shadows);
     }
 

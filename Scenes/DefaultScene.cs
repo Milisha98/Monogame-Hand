@@ -20,7 +20,7 @@ internal class DefaultScene : IScene
     public void LoadContent(ContentManager contentManager)
     {
         _tiler.LoadContent(contentManager);
-        Global.World.Camera.Position = new Vector2(Global.TileDimension * 5, Global.TileDimension * 5);       // Center
+        Global.World.Camera.Position = new Vector2(Global.TileDimension * 18, Global.TileDimension * 190);       // Center
     }
     public void Update(GameTime gameTime)
     {

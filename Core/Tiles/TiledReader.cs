@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace Hands.Core.Tiles;
 internal static class TiledReader
 {
-    const string DataFile = @"Content\Tilesets\Turret.tmx";
+    const string DataFile = @"Content\Tilesets\map.tmx";
 
     public static void Load()
     {
@@ -36,6 +36,9 @@ internal static class TiledReader
             {
                 case "Floor":
                     worldMap.Floor = tiles;
+                    break;
+                case "Walls":
+                    worldMap.Walls = tiles;
                     break;
                 case "Shadows":
                     worldMap.Shadows = tiles;
