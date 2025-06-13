@@ -5,7 +5,9 @@ public enum TurretState
     Opening,
     Raising,
     Active,
-    Destroyed
+    Destroyed,
+    Lowering,
+    Closing
 }
 
 public enum TurretStyle

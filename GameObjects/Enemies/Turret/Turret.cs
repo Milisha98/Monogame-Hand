@@ -1,21 +1,24 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
 using Hands.Core.Sprites;
+using System.Linq;
 
 namespace Hands.GameObjects.Enemies.Turret;
 
-internal class Turret : IUpdate, IDraw
+internal class Turret : IUpdate, IDraw, IMapPosition
 {
+    const float WakeDistance = 400f;
+
     private readonly TurretInfo _info;
-    private readonly Workflow<TurretState> _wf;
+    private readonly Workflow<TurretState> _openWorkflow;
+    private readonly Workflow<TurretState> _closeWorkflow;
+    private readonly SleepManager _sleepManager;
 
     private Vector2 _animationDoorOffsetX = Vector2.Zero;
     private Vector2 _animationDoorOffsetY = Vector2.Zero;
     private Color _animationTurretColor = Color.Black;
     private float _animationCannonRotation = 0f;
-
-    // Temporary
-    private readonly Tween _wake;
+    private float _damageRotation = Random.Shared.NextSingle() * MathF.Tau;
 
     internal Turret(TurretInfo info)
     {
@@ -23,16 +26,26 @@ internal class Turret : IUpdate, IDraw
         Style = info.Style;
 
         // Initialize the workflow stages for the turret
-        _wf = new(WorkflowStages)
+        _openWorkflow = new(OpenWorkflowStages)
         {
             IsActive = false
         };
-        _wf.OnStateChanged += state => State = state;
-        _wf.OnCompleted += () => State = TurretState.Destroyed;
+        _openWorkflow.OnStateChanged += state => State = state;
+        _openWorkflow.OnCompleted += () => State = TurretState.Active;
 
-        // TEMP: Wakes up after 1 second
-        _wake = new Tween(TimeSpan.FromSeconds(1));
-        _wake.OnCompleted += () => OnSisterAwake();
+        // Initialize the close workflow (if needed)
+        _closeWorkflow = new(CloseWorkflowStages)
+        {
+            IsActive = false
+        };
+        _closeWorkflow.OnStateChanged += state => State = state;
+        _closeWorkflow.OnCompleted += () => State = TurretState.Closed;
+
+        // Sleep Manager
+        _sleepManager = new SleepManager(this, WakeDistance);
+        _sleepManager.OnSisterAwake += OnSisterAwake;
+        _sleepManager.OnSleep += OnSleep;
+
         _info = info;
     }
 
@@ -40,13 +53,16 @@ internal class Turret : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        _wake.Update(gameTime);
-        _wf.Update(gameTime);
+        _sleepManager.Update(gameTime);
+        _openWorkflow.Update(gameTime);
+        _closeWorkflow.Update(gameTime);
 
         if (State == TurretState.Closed) return;
 
         UpdateOpening();
         UpdateRising();
+        UpdateLowering();
+        UpdateClosing();
 
         // For the time being, set the target to the mouse position
         var mousePosition = MouseController.MousePosition / Global.Graphics.Scale;
@@ -62,16 +78,31 @@ internal class Turret : IUpdate, IDraw
     {
         if (State != TurretState.Opening) return;
 
-        _animationDoorOffsetX = Size32.Width * _wf.CurrentPercent;
-        _animationDoorOffsetY = Size32.Height * _wf.CurrentPercent;
+        _animationDoorOffsetX = Size32.Width * _openWorkflow.CurrentPercent;
+        _animationDoorOffsetY = Size32.Height * _openWorkflow.CurrentPercent;
 
     }
     private void UpdateRising()
     {
         if (State != TurretState.Raising) return;
 
-        int value = (int)(255f * _wf.CurrentPercent);
+        int value = (int)(255f * _openWorkflow.CurrentPercent);
         _animationTurretColor = new Color(value, value, value);
+    }
+
+    private void UpdateLowering()
+    {
+        if (State != TurretState.Lowering) return;
+
+        int value = (int)(255f - (255f * _closeWorkflow.CurrentPercent));
+        _animationTurretColor = new Color(value, value, value);
+    }
+
+    private void UpdateClosing()
+    {
+        if (State != TurretState.Closing) return;
+        _animationDoorOffsetX = Size32.Width * (1f - _closeWorkflow.CurrentPercent);
+        _animationDoorOffsetY = Size32.Height * (1f - _closeWorkflow.CurrentPercent);
     }
 
     #endregion
@@ -122,9 +153,8 @@ internal class Turret : IUpdate, IDraw
     }
     private void DrawStyle2Doors(SpriteBatch spriteBatch)
     {
-        if (State == TurretState.Active ||
-            State == TurretState.Raising ||
-            State == TurretState.Destroyed) return;
+        if (State.In(TurretState.Active, TurretState.Raising, TurretState.Lowering, TurretState.Destroyed))
+            return;
 
         // Get the 32x32 Source Rectangles for the Doors
         var doorLeft = Sprite.Frames[6].SourceRectangle;
@@ -176,18 +206,26 @@ internal class Turret : IUpdate, IDraw
         spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[8].SourceRectangle, _animationTurretColor);
 
         // Draw Damage   
-        spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[9].SourceRectangle, _animationTurretColor, DamageRotation, Size64.Center, 1f, SpriteEffects.None, 0);
+        spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[9].SourceRectangle, _animationTurretColor, _damageRotation, Size64.Center, 1f, SpriteEffects.None, 0);
     }
 
     #endregion
 
     #region Workflow Stages
 
-    private static WorkflowStage<TurretState>[] WorkflowStages
+    private static WorkflowStage<TurretState>[] OpenWorkflowStages
     {
         get =>
             [ new (TurretState.Opening, TimeSpan.FromMilliseconds(500)),
               new (TurretState.Raising, TimeSpan.FromMilliseconds(500))
+            ];
+    }
+
+    private static WorkflowStage<TurretState>[] CloseWorkflowStages
+    {
+        get =>
+            [ new (TurretState.Lowering, TimeSpan.FromMilliseconds(500)),
+              new (TurretState.Closing, TimeSpan.FromMilliseconds(500))
             ];
     }
 
@@ -197,12 +235,25 @@ internal class Turret : IUpdate, IDraw
 
     private void OnSisterAwake()
     {
-        _wf.IsActive = true;
+        if (State != TurretState.Closed) return;
+        _openWorkflow.IsActive = true;
+        _closeWorkflow.IsActive = false;
+        _closeWorkflow.Reset();
+        IsAwake = true;
+    }
+
+    private void OnSleep()
+    {
+        if (State.In(TurretState.Closed, TurretState.Destroyed)) return;
+        _openWorkflow.IsActive = false;
+        _closeWorkflow.IsActive = true;
+        _openWorkflow.Reset();
+        IsAwake = false;
     }
 
     #endregion
 
-    // Properties
+    // Properties   
     public string ID { get => _info.ID; }
     public float RateOfFire { get => _info.RoF; }
     public TurretState State { get; private set; } = TurretState.Closed;
@@ -210,8 +261,8 @@ internal class Turret : IUpdate, IDraw
     internal TurretManager Manager => Global.World.TurretManager;
     internal TurretSprite Sprite => Manager.Sprite;
     internal Vector2 Target { get; private set; } = Vector2.Zero;
-    public TurretStyle Style { get; set; } = TurretStyle.Style1; // Default style
-    private float DamageRotation { get; } = Random.Shared.NextSingle() * MathF.Tau;
+    public TurretStyle Style { get; set; } = TurretStyle.Style1;        // Default style
+    public bool IsAwake { get; private set; } = false;
 
 }
 

@@ -9,7 +9,6 @@ public class Workflow<T>
     private int _stageIndex = -1;
     private Tween _tween;
     private bool _isInitialized = false;
-    private Dictionary<T, float> _dict = new();
 
     public delegate void WorkflowCompletedHandler();
     public delegate void StateChangedHandler(T newState);
@@ -23,7 +22,6 @@ public class Workflow<T>
             throw new ArgumentNullException(nameof(stages), $"{nameof(stages)} must contain at least one element.");
         }
         _stages = stages;
-        _dict = _stages.ToDictionary(stage => stage.State, stage => 0f);
 
     }
 
@@ -53,8 +51,16 @@ public class Workflow<T>
         {
             float pct = _tween.Update(gameTime);
             CurrentPercent = pct;
-            _dict[CurrentStage.State] = pct;
         }
+    }
+
+    public void Reset()
+    {
+        _stageIndex = 0;
+        _isInitialized = false;
+        IsComplete = false;
+        CurrentPercent = 0f;
+        _tween = new Tween(CurrentStage.Duration);
     }
 
     private void ChangeStage()
@@ -70,7 +76,6 @@ public class Workflow<T>
     public WorkflowStage<T> CurrentStage => _stages[_stageIndex];
     public T CurrentState => CurrentStage.State;
     public float CurrentPercent { get; private set; } = 0f;
-    public float GetPercentComplete(T stage) => _dict[stage];
     public bool IsActive { get; set; } = true;
 }
 
