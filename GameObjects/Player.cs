@@ -37,7 +37,22 @@ internal class Player : IGameObject, IMapPosition
             return;
         }
 
-        // TODO: Control the Player movement and actions here
+        UpdateInput(gameTime);
+    }
+
+    private void UpdateInput(GameTime gameTime)
+    {
+        // Control the Player movement and actions here
+        var move = KeyboardController.CheckInput();
+        if (move != Vector2.Zero)
+        {
+            move.Normalize();
+        }
+        float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
+        Vector2 proposedMapPosition = MapPosition + (move * speed);
+        Rectangle proposedCollisionRectangle = new Rectangle((int)proposedMapPosition.X, (int)proposedMapPosition.Y, Size48.Point.X, Size48.Point.Y);
+        // TODO: Check if the proposed position is valid (e.g., not colliding with a tile)
+        MapPosition = proposedMapPosition;
     }
 
     private void UpdateRiseOffGroundAnimation(GameTime gameTime)
@@ -56,4 +71,5 @@ internal class Player : IGameObject, IMapPosition
     }
 
     public Vector2 MapPosition { get; set; } = Global.World.GlobalPlayerPosition;
+    public float MovementSpeed { get; set; } = 0.35f;
 }

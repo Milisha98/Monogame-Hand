@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Hands.Core.Animation;
+﻿namespace Hands.Core.Animation;
 public class Workflow<T>
 {
     private readonly WorkflowStage<T>[] _stages;
@@ -43,6 +39,7 @@ public class Workflow<T>
             else
             {
                 IsComplete = true;
+                IsActive = false;
                 OnCompleted?.Invoke();
             }
 
@@ -56,11 +53,11 @@ public class Workflow<T>
 
     public void Reset()
     {
-        _stageIndex = 0;
-        _isInitialized = false;
+        _stageIndex = -1;
+        IsActive = false;
         IsComplete = false;
         CurrentPercent = 0f;
-        _tween = new Tween(CurrentStage.Duration);
+        _isInitialized = false;
     }
 
     private void ChangeStage()
@@ -73,10 +70,11 @@ public class Workflow<T>
     }
 
     public bool IsComplete { get; private set; } = false;
-    public WorkflowStage<T> CurrentStage => _stages[_stageIndex];
-    public T CurrentState => CurrentStage.State;
     public float CurrentPercent { get; private set; } = 0f;
     public bool IsActive { get; set; } = true;
+    public WorkflowStage<T> CurrentStage => _stages[_stageIndex];
+    public T CurrentState => CurrentStage.State;
+
 }
 
 

@@ -26,16 +26,16 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
         {
             IsActive = false
         };
-        _openWorkflow.OnStateChanged += state => State = state;
-        _openWorkflow.OnCompleted += () => State = TurretState.Active;
+        _openWorkflow.OnStateChanged += state => OnChangeState(state);
+        _openWorkflow.OnCompleted += () => OnChangeState(TurretState.Active);
 
         // Initialize the close workflow (if needed)
         _closeWorkflow = new(CloseWorkflowStages)
         {
             IsActive = false
         };
-        _closeWorkflow.OnStateChanged += state => State = state;
-        _closeWorkflow.OnCompleted += () => State = TurretState.Closed;
+        _closeWorkflow.OnStateChanged += state => OnChangeState(state);
+        _closeWorkflow.OnCompleted += () => OnChangeState(TurretState.Closed);
 
         _info = info;
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
@@ -56,11 +56,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
         UpdateLowering();
         UpdateClosing();
 
-        // For the time being, set the target to the mouse position
-        var mousePosition = MouseController.MousePosition / Global.Graphics.Scale;
-        var position = MapPosition + Size64.Center;
-        var screenPosition = Global.World.Camera.WorldToScreenPosition(position);
-        Vector2 direction = mousePosition - screenPosition;
+        Vector2 playerPosition = Global.World.Player.MapPosition;
+        Vector2 direction = playerPosition - MapPosition;
 
         _animationCannonRotation = MathF.Atan2(direction.Y, direction.X);
 
@@ -72,7 +69,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
         _animationDoorOffsetX = Size32.Width * _openWorkflow.CurrentPercent;
         _animationDoorOffsetY = Size32.Height * _openWorkflow.CurrentPercent;
-
+        //if (ID == "2") Debug.WriteLine($"Turret {ID} Opening: OffsetX={_animationDoorOffsetX}, OffsetY={_animationDoorOffsetY}");
     }
     private void UpdateRising()
     {
@@ -80,6 +77,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
         int value = (int)(255f * _openWorkflow.CurrentPercent);
         _animationTurretColor = new Color(value, value, value);
+        //if (ID == "2") Debug.WriteLine($"Turret {ID} Rising: Color={_animationTurretColor}");
     }
 
     private void UpdateLowering()
@@ -88,6 +86,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
         int value = (int)(255f - (255f * _closeWorkflow.CurrentPercent));
         _animationTurretColor = new Color(value, value, value);
+        //if (ID == "2") System.Diagnostics.Debug.WriteLine($"Turret {ID} Lowering: Color={_animationTurretColor}");
     }
 
     private void UpdateClosing()
@@ -95,6 +94,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
         if (State != TurretState.Closing) return;
         _animationDoorOffsetX = Size32.Width * (1f - _closeWorkflow.CurrentPercent);
         _animationDoorOffsetY = Size32.Height * (1f - _closeWorkflow.CurrentPercent);
+        //if (ID == "2") Debug.WriteLine($"Turret {ID} Closing: OffsetX={_animationDoorOffsetX}, OffsetY={_animationDoorOffsetY}");
     }
 
     #endregion
@@ -181,7 +181,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
     private void DrawTurret(SpriteBatch spriteBatch)
     {
-        if (State != TurretState.Raising && State != TurretState.Active) return;
+        if (State.In(TurretState.Raising, TurretState.Lowering, TurretState.Active) == false) return;
 
         // Draw Turret Body
         spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[1].SourceRectangle, _animationTurretColor);
@@ -208,8 +208,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
     private static WorkflowStage<TurretState>[] OpenWorkflowStages
     {
         get =>
-            [ new (TurretState.Opening, TimeSpan.FromMilliseconds(500)),
-              new (TurretState.Raising, TimeSpan.FromMilliseconds(500))
+            [ new (TurretState.Opening, TimeSpan.FromMilliseconds(250)),
+              new (TurretState.Raising, TimeSpan.FromMilliseconds(250))
             ];
     }
 
@@ -217,8 +217,22 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
     {
         get =>
             [ new (TurretState.Lowering, TimeSpan.FromMilliseconds(500)),
-              new (TurretState.Closing, TimeSpan.FromMilliseconds(500))
+              new (TurretState.Closing, TimeSpan.FromMilliseconds(250))
             ];
+    }
+
+    private void OnChangeState(TurretState state)
+    {
+
+        //Debug.WriteLine($"Turret {ID} State from {State} -> {state}");
+        State = state;
+
+        if (state == TurretState.Destroyed)
+        {
+            _closeWorkflow.Reset();
+            _openWorkflow.Reset();
+            Manager.Unregister(this);
+        }
     }
 
     #endregion
@@ -227,7 +241,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
     public float WakeDistance { get; init; }
     public bool IsAsleep { get; private set; } = true;
-    private void OnSisterAwake()
+    public void OnSisterAwake()
     {
         if (State != TurretState.Closed) return;
         _openWorkflow.IsActive = true;
@@ -236,23 +250,13 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
         IsAsleep = false;
     }
 
-    private void OnSleep()
+    public void OnSleep()
     {
         if (State.In(TurretState.Closed, TurretState.Destroyed)) return;
         _openWorkflow.IsActive = false;
         _closeWorkflow.IsActive = true;
         _openWorkflow.Reset();
         IsAsleep = true;
-    }
-
-    void ISleep.OnSleep()
-    {
-        OnSleep();
-    }
-
-    void ISleep.OnSisterAwake()
-    {
-        OnSisterAwake();
     }
 
     #endregion

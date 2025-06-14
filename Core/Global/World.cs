@@ -1,13 +1,12 @@
 ﻿using Hands.Core.Managers;
-using Hands.Core.Sprites;
 using Hands.GameObjects;
 using Hands.GameObjects.Enemies.Turret;
 
 namespace Hands.Core;
 internal class World
 {
-    public float GlobalWakeDistance => 750f;
-    public Vector2 GlobalPlayerPosition => new Vector2(Global.TileDimension * 18, Global.TileDimension * 190);
+    public float GlobalWakeDistance => 500f;
+    public Vector2 GlobalPlayerPosition => new Vector2(Global.TileDimension * 18, Global.TileDimension * 196);
 
     public Camera2D Camera { get; set; } = new Camera2D();
     public WorldMap Map { get; set; } = new();
