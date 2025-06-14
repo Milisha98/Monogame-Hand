@@ -15,7 +15,15 @@ internal class TurretManager : ILoadContent, IUpdate, IDraw
 
     public void Register(TurretInfo info)
     {
-        Turrets.Add(new Turret(info));
+        var turret = new Turret(info);
+        Turrets.Add(turret);
+        Global.World.SleepManager.Register((ISleep)turret);
+    }
+
+    public void Unregister(Turret turret)
+    {
+        Turrets.Remove(turret);
+        Global.World.SleepManager.Unregister((ISleep)turret);
     }
 
     public void Update(GameTime gameTime)
@@ -55,4 +63,4 @@ internal class TurretSprite
     public Dictionary<int, SpriteFrame> Frames { get; private set; }
 }
 
-internal record TurretInfo(string ID, int X, int Y, TurretStyle Style, float RoF);
+internal record TurretInfo(string ID, int X, int Y, TurretStyle Style, float RoF, float WakeDistance);

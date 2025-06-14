@@ -1,18 +1,14 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
 using Hands.Core.Sprites;
-using System.Linq;
 
 namespace Hands.GameObjects.Enemies.Turret;
 
-internal class Turret : IUpdate, IDraw, IMapPosition
+internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 {
-    const float WakeDistance = 400f;
-
     private readonly TurretInfo _info;
     private readonly Workflow<TurretState> _openWorkflow;
     private readonly Workflow<TurretState> _closeWorkflow;
-    private readonly SleepManager _sleepManager;
 
     private Vector2 _animationDoorOffsetX = Vector2.Zero;
     private Vector2 _animationDoorOffsetY = Vector2.Zero;
@@ -20,10 +16,10 @@ internal class Turret : IUpdate, IDraw, IMapPosition
     private float _animationCannonRotation = 0f;
     private float _damageRotation = Random.Shared.NextSingle() * MathF.Tau;
 
-    internal Turret(TurretInfo info)
+    public Turret(TurretInfo info)
     {
         MapPosition = new Vector2(info.X, info.Y);
-        Style = info.Style;
+        Style = info.Style;        
 
         // Initialize the workflow stages for the turret
         _openWorkflow = new(OpenWorkflowStages)
@@ -41,19 +37,15 @@ internal class Turret : IUpdate, IDraw, IMapPosition
         _closeWorkflow.OnStateChanged += state => State = state;
         _closeWorkflow.OnCompleted += () => State = TurretState.Closed;
 
-        // Sleep Manager
-        _sleepManager = new SleepManager(this, WakeDistance);
-        _sleepManager.OnSisterAwake += OnSisterAwake;
-        _sleepManager.OnSleep += OnSleep;
-
         _info = info;
+        WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
+
     }
 
     #region IUpdate
 
     public void Update(GameTime gameTime)
     {
-        _sleepManager.Update(gameTime);
         _openWorkflow.Update(gameTime);
         _closeWorkflow.Update(gameTime);
 
@@ -231,15 +223,17 @@ internal class Turret : IUpdate, IDraw, IMapPosition
 
     #endregion
 
-    #region Events
+    #region ISleep
 
+    public float WakeDistance { get; init; }
+    public bool IsAsleep { get; private set; } = true;
     private void OnSisterAwake()
     {
         if (State != TurretState.Closed) return;
         _openWorkflow.IsActive = true;
         _closeWorkflow.IsActive = false;
         _closeWorkflow.Reset();
-        IsAwake = true;
+        IsAsleep = false;
     }
 
     private void OnSleep()
@@ -248,7 +242,17 @@ internal class Turret : IUpdate, IDraw, IMapPosition
         _openWorkflow.IsActive = false;
         _closeWorkflow.IsActive = true;
         _openWorkflow.Reset();
-        IsAwake = false;
+        IsAsleep = true;
+    }
+
+    void ISleep.OnSleep()
+    {
+        OnSleep();
+    }
+
+    void ISleep.OnSisterAwake()
+    {
+        OnSisterAwake();
     }
 
     #endregion
@@ -262,7 +266,6 @@ internal class Turret : IUpdate, IDraw, IMapPosition
     internal TurretSprite Sprite => Manager.Sprite;
     internal Vector2 Target { get; private set; } = Vector2.Zero;
     public TurretStyle Style { get; set; } = TurretStyle.Style1;        // Default style
-    public bool IsAwake { get; private set; } = false;
 
 }
 

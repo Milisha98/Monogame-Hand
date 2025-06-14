@@ -1,8 +1,6 @@
-﻿using System;
-using Hands.Core;
+﻿using Hands.Core;
 using Hands.GameObjects.Tiles;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 
 
 namespace Hands.Scenes;
@@ -20,16 +18,20 @@ internal class DefaultScene : IScene
     public void LoadContent(ContentManager contentManager)
     {
         _tiler.LoadContent(contentManager);
-        Global.World.Camera.Position = new Vector2(Global.TileDimension * 18, Global.TileDimension * 190);       // Center
+        Global.World.Camera.Position = Global.World.GlobalPlayerPosition;
+
+        Global.World.Player = new();
+        Global.World.Player.LoadContent(contentManager);
+
     }
     public void Update(GameTime gameTime)
     {
-        //MoveCamera();
-        //ZoomCamera();
+        MoveCamera();
 
         MouseController.Update();
+        Global.World.Player.Update(gameTime);
         Global.World.TurretManager.Update(gameTime);
-
+        Global.World.SleepManager.Update(gameTime);
     }
 
     private static void MoveCamera()
@@ -70,6 +72,7 @@ internal class DefaultScene : IScene
 
         _tiler.Draw(spriteBatch);
         Global.World.TurretManager.Draw(spriteBatch);
+        Global.World.Player.Draw(spriteBatch);
 
         spriteBatch.End();
     }
@@ -79,6 +82,5 @@ internal class DefaultScene : IScene
 
     public void OnChangeSceneStop()
     {
-        throw new NotImplementedException();
     }
 }

@@ -1,2 +1,3 @@
-﻿using var game = new Hands.HandsGame();
+﻿ApplicationConfiguration.Initialize();
+using var game = new Hands.HandsGame();
 game.Run();

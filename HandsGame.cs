@@ -1,5 +1,4 @@
 ﻿using Hands.Core;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace Hands;

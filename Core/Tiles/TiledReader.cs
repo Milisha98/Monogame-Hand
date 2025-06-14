@@ -65,11 +65,12 @@ internal static class TiledReader
                 string type = o.Attribute("type").Value;
                 TurretInfo t = new
                 (
-                    ID:     o.Attribute("id").Value,
-                    X:      int.Parse(o.Attribute("x").Value),
-                    Y:      int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
-                    Style:  (TurretStyle)Enum.Parse(typeof(TurretStyle), type, true),
-                    RoF:    o.ReadPropertyAsFloat("RoF", 2f)
+                    ID:             o.Attribute("id").Value,
+                    X:              int.Parse(o.Attribute("x").Value),
+                    Y:              int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
+                    Style:          (TurretStyle)Enum.Parse(typeof(TurretStyle), type, true),
+                    RoF:            o.ReadPropertyAsFloat("RoF", 2f),
+                    WakeDistance:   o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
                 );
 
                 Global.World.TurretManager.Register(t);

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace Hands.Core.Sprites;
 public static class Size32
 {
+    public static Vector2 Size      { get => new Vector2(32, 32); }
     public static Vector2 Center    { get => new Vector2(16, 16); }
     public static Vector2 Width     { get => new Vector2(32, 0); }
     public static Vector2 Height    { get => new Vector2(0, 32); }
