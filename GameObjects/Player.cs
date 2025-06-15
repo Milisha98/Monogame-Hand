@@ -1,5 +1,6 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
+using Hands.Core.Managers.Collision;
 using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
@@ -44,15 +45,15 @@ internal class Player : IGameObject, IMapPosition
     {
         // Control the Player movement and actions here
         var move = KeyboardController.CheckInput();
-        if (move != Vector2.Zero)
-        {
-            move.Normalize();
-        }
+        if (move == Vector2.Zero) return;
+        move.Normalize();
         float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
-        Vector2 proposedMapPosition = MapPosition + (move * speed);
-        Rectangle proposedCollisionRectangle = new Rectangle((int)proposedMapPosition.X, (int)proposedMapPosition.Y, Size48.Point.X, Size48.Point.Y);
-        // TODO: Check if the proposed position is valid (e.g., not colliding with a tile)
-        MapPosition = proposedMapPosition;
+        var proposedMapPosition = MapPosition + (move * speed);
+        ProposedLocation = new Rectangle((proposedMapPosition - Size48.Size).ToPoint(), Size48.Point);
+        if (Global.World.CollisionManager.IsClaytonCollision(ProposedLocation) == CollisionType.None)
+        {
+            MapPosition = proposedMapPosition;
+        }
     }
 
     private void UpdateRiseOffGroundAnimation(GameTime gameTime)
@@ -68,8 +69,18 @@ internal class Player : IGameObject, IMapPosition
     {
         spriteBatch.Draw(_texture, MapPosition - Size48.Center + _shadowOffset, _frames[1].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, _height);
         spriteBatch.Draw(_texture, MapPosition - Size48.Center, _frames[0].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, 0f);
+
+        Texture2D texture = spriteBatch.BlankTexture();
+        if (Global.DebugShowCollisionBoxes)
+        {
+            var location = (MapPosition - Size48.Size).ToPoint();
+            var rectangle = new Rectangle(location, Size48.Point);
+            spriteBatch.Draw(texture, rectangle, Color.Yellow);
+        }
     }
 
     public Vector2 MapPosition { get; set; } = Global.World.GlobalPlayerPosition;
     public float MovementSpeed { get; set; } = 0.35f;
+
+    public Rectangle ProposedLocation { get; private set; }
 }

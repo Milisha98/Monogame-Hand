@@ -44,6 +44,11 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
 
+        if (Global.DebugShowCollisionBoxes)
+        {
+            Global.World.CollisionManager.Draw(spriteBatch);
+        }
+
         spriteBatch.End();
     }
     public void OnChangeSceneStart()

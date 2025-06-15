@@ -1,5 +1,6 @@
-﻿using Hands.GameObjects.Enemies.Turret;
-using System;
+﻿using Hands.Core.Managers.Collision;
+using Hands.GameObjects.Enemies.Turret;
+
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -30,6 +31,7 @@ internal static class TiledReader
         {
             int layerID = int.Parse(layer.Attribute("id").Value);
             string layerName = layer.Attribute("name").Value;
+            string layerClass = layer.Attribute("class")?.Value ?? string.Empty;
             var tiles = LoadMapData(layer.Element("data")).ToList();
 
             switch (layerName)
@@ -43,7 +45,14 @@ internal static class TiledReader
                 case "Shadows":
                     worldMap.Shadows = tiles;
                     break;
-
+                case "Blocked":
+                    CollisionType collisionType = (CollisionType)Enum.Parse(typeof(CollisionType), layerClass, true);
+                    var rectangles = tiles.Select(t => new Rectangle((int)t.MapPosition.X, (int)t.MapPosition.Y, Global.TileDimension, Global.TileDimension)).ToList();
+                    foreach (var rectangle in rectangles)
+                    {
+                        Global.World.CollisionManager.RegisterCollision(rectangle, collisionType);
+                    }
+                    break;
             }
         }
 

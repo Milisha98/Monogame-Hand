@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Hands.Core;
 internal class Graphics

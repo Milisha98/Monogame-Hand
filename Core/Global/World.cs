@@ -1,4 +1,5 @@
 ﻿using Hands.Core.Managers;
+using Hands.Core.Managers.Collision;
 using Hands.GameObjects;
 using Hands.GameObjects.Enemies.Turret;
 
@@ -15,4 +16,5 @@ internal class World
     // Managers
     public TurretManager TurretManager { get; set; } = new TurretManager();
     public SleepManager SleepManager { get; set; } = new SleepManager();
+    public CollisionManager CollisionManager { get; set; } = new CollisionManager();
 }

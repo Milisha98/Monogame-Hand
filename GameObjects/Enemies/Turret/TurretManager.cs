@@ -1,4 +1,5 @@
 ﻿using Hands.Core;
+using Hands.Core.Managers.Collision;
 using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
@@ -17,13 +18,16 @@ internal class TurretManager : ILoadContent, IUpdate, IDraw
     {
         var turret = new Turret(info);
         Turrets.Add(turret);
-        Global.World.SleepManager.Register((ISleep)turret);
+        Global.World.SleepManager.Register(turret);
+
+        var turretRectangle = new Rectangle(info.X, info.Y, Size64.Point.X, Size64.Point.Y);
+        Global.World.CollisionManager.RegisterCollision(turretRectangle, CollisionType.Turret);
     }
 
     public void Unregister(Turret turret)
     {
         Turrets.Remove(turret);
-        Global.World.SleepManager.Unregister((ISleep)turret);
+        Global.World.SleepManager.Unregister(turret);
     }
 
     public void Update(GameTime gameTime)
