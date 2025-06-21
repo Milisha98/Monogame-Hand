@@ -1,0 +1,2 @@
+﻿- Can shoot
+- Exact hit detection

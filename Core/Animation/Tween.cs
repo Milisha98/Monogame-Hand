@@ -34,5 +34,11 @@ public class Tween
         return (float)_elapsedTime.TotalMilliseconds / (float)_duration.TotalMilliseconds;
     }
 
+    public void Reset()
+    {
+        _elapsedTime = TimeSpan.Zero;
+        _isCompleted = false;
+    }
+
     public bool IsComplete => _isCompleted;
 }
