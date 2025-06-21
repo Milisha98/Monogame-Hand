@@ -3,6 +3,7 @@
 namespace Hands.GameObjects.Weapons;
 internal interface IWeapon : ILoadContent, IUpdate, IDraw
 {
-    public float ShootSpeed { get; }
+    public float ShootVelocity { get; }
+    public float ShootDelay { get; }
     public float Damage { get; }
 }

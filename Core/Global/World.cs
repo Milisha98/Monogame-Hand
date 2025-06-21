@@ -2,6 +2,7 @@
 using Hands.Core.Managers.Collision;
 using Hands.GameObjects;
 using Hands.GameObjects.Enemies.Turret;
+using Hands.GameObjects.Projectiles;
 
 namespace Hands.Core;
 internal class World
@@ -17,4 +18,5 @@ internal class World
     public TurretManager TurretManager { get; set; } = new TurretManager();
     public SleepManager SleepManager { get; set; } = new SleepManager();
     public CollisionManager CollisionManager { get; set; } = new CollisionManager();
+    public ProjectileManager ProjectileManager { get; set; } = new ProjectileManager();
 }

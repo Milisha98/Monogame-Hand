@@ -1,5 +1,6 @@
 ﻿namespace Hands.GameObjects.Weapons;
 internal record WeaponInfo
     (float Damage, 
-     float ShootSpeed, 
+     float ShootDelay,
+     float ShootVelocity,
      int MaxAmmo = int.MaxValue);

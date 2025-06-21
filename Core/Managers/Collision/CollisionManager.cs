@@ -5,22 +5,22 @@ using System.Linq;
 namespace Hands.Core.Managers.Collision;
 public class CollisionManager : IDraw
 {
-    private Dictionary<Rectangle, CollisionType> _claytons = new();
-    public void RegisterCollision(Rectangle rectangle, CollisionType collisionType)
+    public List<ICollision> _collisions = new();
+    public void RegisterCollision(ICollision collision)
     {
-        _claytons[rectangle] = collisionType;
+        _collisions.Add(collision);
     }
-    public void RemoveCollision(Rectangle rectangle)
+    public void RemoveCollision(ICollision collision)
     {
-        _claytons.Remove(rectangle);
+        _collisions.Remove(collision);
     }
 
     public CollisionType IsClaytonCollision(Rectangle rectangle)
     {
-        var overlapping = _claytons.Keys.ToList().Where(c => c.Intersects(rectangle));
+        var overlapping = _collisions.Where(c => c.Clayton.Intersects(rectangle));
         foreach (var clayton in overlapping)
         {
-            return _claytons[clayton];
+            return clayton.CollisionType;
         }
         return CollisionType.None;
     }
@@ -29,7 +29,7 @@ public class CollisionManager : IDraw
     {
         if (Global.DebugShowCollisionBoxes == false) return;
         Texture2D texture = spriteBatch.BlankTexture();
-        foreach (Rectangle clayton in _claytons.Keys)
+        foreach (Rectangle clayton in _collisions.Select(c => c.Clayton))
         {
             spriteBatch.Draw(texture, clayton, Color.Red);
         }

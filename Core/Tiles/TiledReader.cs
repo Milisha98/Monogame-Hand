@@ -1,6 +1,6 @@
 ﻿using Hands.Core.Managers.Collision;
 using Hands.GameObjects.Enemies.Turret;
-
+using Hands.GameObjects.Tiles;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -50,7 +50,8 @@ internal static class TiledReader
                     var rectangles = tiles.Select(t => new Rectangle((int)t.MapPosition.X, (int)t.MapPosition.Y, Global.TileDimension, Global.TileDimension)).ToList();
                     foreach (var rectangle in rectangles)
                     {
-                        Global.World.CollisionManager.RegisterCollision(rectangle, collisionType);
+                        var c = new StaticCollision(rectangle);
+                        Global.World.CollisionManager.RegisterCollision(c);
                     }
                     break;
             }

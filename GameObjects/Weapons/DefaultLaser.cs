@@ -1,14 +1,14 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
 using Hands.Core.Sprites;
-
-using Input = Microsoft.Xna.Framework.Input;
+using Hands.GameObjects.Projectiles;
 using Microsoft.Xna.Framework.Content;
+using Input = Microsoft.Xna.Framework.Input;
 
 namespace Hands.GameObjects.Weapons;
 internal class DefaultLaser : IWeapon
 {
-    private static readonly WeaponInfo _defaultWeaponInfo = new(Damage: 1f, ShootSpeed: 0.5f);
+    private static readonly WeaponInfo _defaultWeaponInfo = new(Damage: 1f, ShootDelay: 0.25f, ShootVelocity: 5f);
     private readonly WeaponInfo _weaponInfo;
     private readonly Tween _shootTween;
 
@@ -16,7 +16,7 @@ internal class DefaultLaser : IWeapon
     public DefaultLaser(WeaponInfo weaponInfo)
     {
         _weaponInfo = weaponInfo;
-        _shootTween = new Tween(TimeSpan.FromSeconds(ShootSpeed));
+        _shootTween = new Tween(TimeSpan.FromSeconds(weaponInfo.ShootDelay));
         _shootTween.OnCompleted += () => OnTweenCompleted();
     }
     public void LoadContent(ContentManager contentManager)
@@ -32,8 +32,10 @@ internal class DefaultLaser : IWeapon
         {
             CanShoot = false;
             _shootTween.Reset();
-            // TODO: Add Projectile
-            System.Diagnostics.Debug.WriteLine("DefaultLaser: Shoot action triggered.");
+
+            // Create and shoot the projectile
+            var info = new ProjectileInfo(ProjectileType.RedBall, MapPosition, new Vector2(0, -ShootVelocity), 1f);
+            Global.World.ProjectileManager.Register(info);
         }
     }
 
@@ -52,9 +54,10 @@ internal class DefaultLaser : IWeapon
 
     #endregion
     
-    public bool     CanShoot    { get; private set; }
-    public float    ShootSpeed  => _weaponInfo.ShootSpeed;
-    public float    Damage      => _weaponInfo.Damage;
-    public Player   Player      => Global.World.Player;
-    public Vector2  MapPosition => Player.MapPosition + Size48.HalfWidth;
+    public bool     CanShoot        { get; private set; }
+    public float    ShootVelocity   => _weaponInfo.ShootVelocity;
+    public float    ShootDelay      => _weaponInfo.ShootDelay;
+    public float    Damage          => _weaponInfo.Damage;
+    public Player   Player          => Global.World.Player;
+    public Vector2  MapPosition     => Player.MapPosition - Size48.Size + Size48.HalfWidth - Size8.HalfWidth;
 }

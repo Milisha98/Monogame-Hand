@@ -24,12 +24,16 @@ internal class DefaultScene : IScene
         Global.World.Player = new();
         Global.World.Player.LoadContent(contentManager);
 
+        Global.World.TurretManager.LoadContent(contentManager);
+        Global.World.ProjectileManager.LoadContent(contentManager);
+
     }
     public void Update(GameTime gameTime)
     {
         Global.World.Player.Update(gameTime);
         Global.World.TurretManager.Update(gameTime);
         Global.World.SleepManager.Update(gameTime);
+        Global.World.ProjectileManager.Update(gameTime);
 
         // Move Camera to lock on the Player
         // TODO: In the future, there might be a deadzone for the camera movement
@@ -42,6 +46,7 @@ internal class DefaultScene : IScene
 
         _tiler.Draw(spriteBatch);
         Global.World.TurretManager.Draw(spriteBatch);
+        Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
 
         if (Global.DebugShowCollisionBoxes)

@@ -21,8 +21,6 @@ internal class Player : IGameObject, IMapPosition
     private float _height = 0;
     private float _zoom = 0.8f;
 
-    private List<IWeapon> Weapons = [];
-
     public Player()
     {
         _startTween = new Tween(TimeSpan.FromSeconds(1f));
