@@ -21,9 +21,8 @@ internal class TurretManager : ILoadContent, IUpdate, IDraw
         Global.World.SleepManager.Register(turret);
 
         var turretRectangle = new Rectangle(info.X, info.Y, Size64.Point.X, Size64.Point.Y);
-        var collision = new StaticCollision(turretRectangle);
-        collision.CollisionType = CollisionType.Turret;
-        Global.World.CollisionManager.RegisterCollision(collision);
+        var collision = new StaticCollision(turretRectangle, [], CollisionType.Turret);
+        Global.World.CollisionManager.Register(collision);
     }
 
     public void Unregister(Turret turret)

@@ -1,4 +1,5 @@
 ﻿using Hands.Core;
+using Hands.Core.Managers.Collision;
 using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
@@ -42,13 +43,13 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
     {
         var projectile = new Projectile(projectileInfo);
         _projectiles.Add(projectile);
-        Global.World.CollisionManager.RegisterCollision(projectile);
+        Global.World.CollisionManager.Register(projectile);
     }
 
     public void Unregister(Projectile projectile)
     {
         _projectiles.Remove(projectile);
-        Global.World.CollisionManager.RemoveCollision(projectile);
+        Global.World.CollisionManager.UnRegister(projectile);
     }
 
     public Dictionary<ProjectileType, ProjectileSprite> Sprite { get; private set; }
@@ -56,7 +57,7 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
 public record ProjectileSprite(Point Size, Texture2D Texture, SpriteFrame Frame);
 
-internal record ProjectileInfo(ProjectileType ProjectileType, Vector2 MapPosition, Vector2 Vector, float Damage);
+internal record ProjectileInfo(ProjectileType ProjectileType, Vector2 MapPosition, Vector2 Vector, float Damage, CollisionType CollisionType);
 
 internal enum ProjectileType
 {

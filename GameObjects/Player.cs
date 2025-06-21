@@ -6,6 +6,7 @@ using Hands.GameObjects.Weapons;
 using Hands.Sprites;
 
 using Microsoft.Xna.Framework.Content;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 
 namespace Hands.GameObjects;
@@ -58,8 +59,10 @@ internal class Player : IGameObject, IMapPosition
         move.Normalize();
         float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
         var proposedMapPosition = MapPosition + (move * speed);
-        ProposedLocation = new Rectangle((proposedMapPosition - Size48.Size).ToPoint(), Size48.Point);
-        if (Global.World.CollisionManager.IsClaytonCollision(ProposedLocation) == CollisionType.None)
+        Rectangle proposedClayton = new Rectangle((proposedMapPosition - Size48.Size).ToPoint(), Size48.Point);
+        var proposedCollision = new StaticCollision(proposedClayton, [], CollisionType.Player);
+        var result = Global.World.CollisionManager.CheckClaytonsCollision(proposedCollision);
+        if (result is null || Global.World.CollisionManager.IsCollisionWeCareAbout(CollisionType.Player, result.CollisionType) == false)
         {
             MapPosition = proposedMapPosition;
         }
@@ -97,7 +100,6 @@ internal class Player : IGameObject, IMapPosition
 
     public Vector2 MapPosition          { get; set; } = Global.World.GlobalPlayerPosition;
     public float MovementSpeed          { get; set; } = 0.35f;
-    public Rectangle ProposedLocation   { get; private set; }
 
     // Weapons
     public IWeapon MainWeapon           { get; set; }

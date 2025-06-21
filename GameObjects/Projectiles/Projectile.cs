@@ -32,5 +32,5 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
 
     public Rectangle[] CollisionRectangles => [ Clayton ];
 
-    public CollisionType CollisionType => CollisionType.Projectile;
+    public CollisionType CollisionType => _info.CollisionType;
 }

@@ -1,5 +1,6 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
+using Hands.Core.Managers.Collision;
 using Hands.Core.Sprites;
 using Hands.GameObjects.Projectiles;
 using Microsoft.Xna.Framework.Content;
@@ -34,7 +35,7 @@ internal class DefaultLaser : IWeapon
             _shootTween.Reset();
 
             // Create and shoot the projectile
-            var info = new ProjectileInfo(ProjectileType.RedBall, MapPosition, new Vector2(0, -ShootVelocity), 1f);
+            var info = new ProjectileInfo(ProjectileType.RedBall, MapPosition, new Vector2(0, -ShootVelocity), 1f, CollisionType.ProjectilePlayer);
             Global.World.ProjectileManager.Register(info);
         }
     }

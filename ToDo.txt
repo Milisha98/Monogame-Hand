@@ -1,0 +1,5 @@
+﻿- Shoot Collision Detection
+  - Detect Tiles
+  - Detect Turrets
+
+- Exact hit detection

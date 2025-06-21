@@ -1,6 +1,5 @@
 ﻿using Hands.Core.Managers.Collision;
 using Hands.GameObjects.Enemies.Turret;
-using Hands.GameObjects.Tiles;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -9,7 +8,7 @@ using System.Xml.Linq;
 namespace Hands.Core.Tiles;
 internal static class TiledReader
 {
-    const string DataFile = @"Content\Tilesets\map.tmx";
+    const string DataFile = @"Content\map.tmx";
 
     public static void Load()
     {
@@ -50,8 +49,8 @@ internal static class TiledReader
                     var rectangles = tiles.Select(t => new Rectangle((int)t.MapPosition.X, (int)t.MapPosition.Y, Global.TileDimension, Global.TileDimension)).ToList();
                     foreach (var rectangle in rectangles)
                     {
-                        var c = new StaticCollision(rectangle);
-                        Global.World.CollisionManager.RegisterCollision(c);
+                        var c = new StaticCollision(rectangle, [], collisionType);
+                        Global.World.CollisionManager.Register(c);
                     }
                     break;
             }

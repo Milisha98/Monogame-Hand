@@ -34,6 +34,7 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.Update(gameTime);
         Global.World.SleepManager.Update(gameTime);
         Global.World.ProjectileManager.Update(gameTime);
+        Global.World.CollisionManager.Update(gameTime);
 
         // Move Camera to lock on the Player
         // TODO: In the future, there might be a deadzone for the camera movement
