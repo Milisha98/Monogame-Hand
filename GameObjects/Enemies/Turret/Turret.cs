@@ -1,10 +1,12 @@
 ﻿using Hands.Core;
 using Hands.Core.Animation;
+using Hands.Core.Managers.Collision;
+using Hands.Core.Managers.Explosion;
 using Hands.Core.Sprites;
 
 namespace Hands.GameObjects.Enemies.Turret;
 
-internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
+internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 {
     private readonly TurretInfo _info;
     private readonly Workflow<TurretState> _openWorkflow;
@@ -223,15 +225,26 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
 
     private void OnChangeState(TurretState state)
     {
+        if (State == state) return; // No change
 
         //Debug.WriteLine($"Turret {ID} State from {State} -> {state}");
+
+        // Handle collision registration based on state change
+        if (State == TurretState.Active)
+        {
+            Global.World.CollisionManager.UnRegister(this);
+        }
+        if (state == TurretState.Active)
+        {
+            Global.World.CollisionManager.Register(this);
+        }
+
         State = state;
 
         if (state == TurretState.Destroyed)
         {
             _closeWorkflow.Reset();
             _openWorkflow.Reset();
-            Manager.Unregister(this);
         }
     }
 
@@ -257,6 +270,30 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep
         _closeWorkflow.IsActive = true;
         _openWorkflow.Reset();
         IsAsleep = true;
+    }
+
+    #endregion
+
+    #region ICollision
+
+    public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size64.Point);
+
+    public Rectangle[] CollisionRectangles => [ Clayton ];
+
+    public CollisionType CollisionType => CollisionType.Turret;
+
+    public bool IsHot => false;
+
+    public bool IsSmoker => true;
+
+    public void OnCollide(ICollision other)
+    {
+        if (State != TurretState.Active) return;
+        
+        var explosionInfo = new ExplosionInfo(MapPosition, 64);
+        Global.World.ExplosionManager.Register(explosionInfo);
+        Global.World.CollisionManager.UnRegister(this);
+        OnChangeState(TurretState.Destroyed);
     }
 
     #endregion

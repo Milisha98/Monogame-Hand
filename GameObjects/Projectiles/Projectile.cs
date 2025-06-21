@@ -1,5 +1,6 @@
 ﻿using Hands.Core;
 using Hands.Core.Managers.Collision;
+using Hands.Core.Managers.Explosion;
 using Hands.Core.Sprites;
 
 namespace Hands.GameObjects.Projectiles;
@@ -25,6 +26,17 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
         spriteBatch.Draw(sprite.Texture, MapPosition, sprite.Frame.SourceRectangle, Color.White);
     }
 
+    #region Events
+
+    public void OnCollide(ICollision other)
+    {
+        var explosionInfo = new ExplosionInfo(MapPosition, 8);
+        Global.World.ExplosionManager.Register(explosionInfo);
+        Global.World.ProjectileManager.Unregister(this);
+    }
+
+    #endregion
+
     private ProjectileType ProjectileType => _info.ProjectileType;
     public Vector2 MapPosition { get; private set; }
 
@@ -33,4 +45,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     public Rectangle[] CollisionRectangles => [ Clayton ];
 
     public CollisionType CollisionType => _info.CollisionType;
+    public bool IsSmoker => false;
+    public bool IsHot => true; // Projectiles are always active
+
 }

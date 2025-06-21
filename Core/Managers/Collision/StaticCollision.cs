@@ -16,4 +16,11 @@ public record StaticCollision : ICollision
     public Rectangle[] CollisionRectangles { get; init; }
 
     public CollisionType CollisionType { get; set; } = CollisionType.Wall;
+
+    public bool IsHot { get; set; } = false;
+    public bool IsSmoker { get; set; } = false;
+    public void OnCollide(ICollision other)
+    {
+        // Static collisions do not handle collisions, they are just barriers.        
+    }
 }

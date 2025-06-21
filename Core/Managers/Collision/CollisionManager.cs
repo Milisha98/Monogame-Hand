@@ -9,25 +9,20 @@ public class CollisionManager : IUpdate, IDraw
     public List<ICollision> _hot = new();
     public void Register(ICollision collision)
     {
-        CollisionType[] hot =
-            [
-                CollisionType.ProjectilePlayer,
-                CollisionType.ProjectileEnemy,
-                CollisionType.Player
-            ];
-
-        if (hot.Contains(collision.CollisionType))
+        if (collision.IsHot)
             _hot.Add(collision);
         else
-             _cold.Add(collision);
+            _cold.Add(collision);
     }
     public void UnRegister(ICollision collision)
     {
-        _hot.Remove(collision);
-        _cold.Remove(collision);
+        if (collision.IsHot)
+            _hot.Remove(collision);
+        else
+            _cold.Remove(collision);
     }
 
-    public ICollision? CheckClaytonsCollision(ICollision a)
+    public ICollision CheckClaytonsCollision(ICollision a)
     {
         var overlapping = _cold.Where(c => c.Clayton.Intersects(a.Clayton));
         foreach (var clayton in overlapping)
@@ -65,17 +60,21 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        // For each hot, I want to see if it intersects with a cold (Claytons)
-        foreach (var hot in _hot)
+        // For each hot, see if it intersects with a cold (Claytons)
+        for (int i = _hot.Count - 1; i >= 0; i--)
         {
+            var hot = _hot[i];
             var collision = CheckClaytonsCollision(hot);
             if (collision is null) continue;
             bool isClaytonCollision = IsCollisionWeCareAbout(hot.CollisionType, collision.CollisionType);
             if (isClaytonCollision)
             {
+                // TODO: Do a more thorough collision check here
+
                 // Handle the collision, e.g., log it, apply effects, etc.
-                // For now, we just print it to the console
                 System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
+                hot.OnCollide(collision);
+                collision.OnCollide(hot);
             }
         }
     }
