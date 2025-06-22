@@ -1,5 +1,2 @@
-﻿- Shoot Collision Detection
-  - Detect Tiles
-  - Detect Turrets
-
-- Exact hit detection
+﻿- Exact hit detection
+- Fire back

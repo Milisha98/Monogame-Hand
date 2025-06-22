@@ -2,6 +2,7 @@
 using Hands.Core.Animation;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
+using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
 
 namespace Hands.GameObjects.Enemies.Turret;
@@ -284,16 +285,20 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public bool IsHot => false;
 
-    public bool IsSmoker => true;
-
     public void OnCollide(ICollision other)
     {
         if (State != TurretState.Active) return;
         
         var explosionInfo = new ExplosionInfo(MapPosition, 64);
+        
         Global.World.ExplosionManager.Register(explosionInfo);
+
         Global.World.CollisionManager.UnRegister(this);
         OnChangeState(TurretState.Destroyed);
+
+        var rectangle = new Rectangle((MapPosition - Size64.Center).ToPoint(), new Point(128, 128));
+        var smokeInfo = new SmokeAreaInfo(rectangle, 50, 0.1f);
+        Global.World.SmokeManager.Register(smokeInfo);
     }
 
     #endregion

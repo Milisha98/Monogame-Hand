@@ -45,7 +45,6 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     public Rectangle[] CollisionRectangles => [ Clayton ];
 
     public CollisionType CollisionType => _info.CollisionType;
-    public bool IsSmoker => false;
     public bool IsHot => true; // Projectiles are always active
 
 }

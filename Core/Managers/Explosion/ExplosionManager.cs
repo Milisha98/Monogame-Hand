@@ -1,8 +1,7 @@
 ﻿using Hands.Core.Sprites;
-using Hands.GameObjects.Enemies.Turret;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
-using SharpDX.Direct3D9;
+using System;
 using System.Collections.Generic;
 
 namespace Hands.Core.Managers.Explosion;
@@ -33,7 +32,9 @@ public class ExplosionManager : ILoadContent, IUpdate, IDraw
             var explosion = _explosions[i];
             explosion.Update(gameTime);
             if (explosion.IsComplete)
+            {
                 _explosions.RemoveAt(i);
+            }
         }
     }
 
