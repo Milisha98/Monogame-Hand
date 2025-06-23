@@ -4,6 +4,7 @@ using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
+using Hands.GameObjects.Projectiles;
 
 namespace Hands.GameObjects.Enemies.Turret;
 
@@ -12,6 +13,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     private readonly TurretInfo _info;
     private readonly Workflow<TurretState> _openWorkflow;
     private readonly Workflow<TurretState> _closeWorkflow;
+    private readonly Tween _fireDelay;
 
     private Vector2 _animationDoorOffsetX = Vector2.Zero;
     private Vector2 _animationDoorOffsetY = Vector2.Zero;
@@ -22,7 +24,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public Turret(TurretInfo info)
     {
         MapPosition = new Vector2(info.X, info.Y);
-        Style = info.Style;        
+        Style = info.Style;
 
         // Initialize the workflow stages for the turret
         _openWorkflow = new(OpenWorkflowStages)
@@ -43,14 +45,18 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         _info = info;
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
 
+        _fireDelay = new Tween(TimeSpan.FromSeconds(RateOfFire));
     }
 
     #region IUpdate
 
     public void Update(GameTime gameTime)
     {
+        if (State == TurretState.Destroyed) return;
+
         _openWorkflow.Update(gameTime);
         _closeWorkflow.Update(gameTime);
+        _fireDelay.Update(gameTime);
 
         if (State == TurretState.Closed) return;
 
@@ -58,11 +64,24 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         UpdateRising();
         UpdateLowering();
         UpdateClosing();
+        UpdateActive();
+
+    }
+
+    private void UpdateActive()
+    {
+        if (State != TurretState.Active) return;
 
         Vector2 playerPosition = Global.World.Player.MapPosition;
         Vector2 direction = playerPosition - MapPosition;
 
         _animationCannonRotation = MathF.Atan2(direction.Y, direction.X);
+
+        if (_fireDelay.IsComplete)
+        {
+            Shoot(direction);
+            _fireDelay.Reset();
+        }
 
     }
 
@@ -98,6 +117,16 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         _animationDoorOffsetX = Size32.Width * (1f - _closeWorkflow.CurrentPercent);
         _animationDoorOffsetY = Size32.Height * (1f - _closeWorkflow.CurrentPercent);
         //if (ID == "2") Debug.WriteLine($"Turret {ID} Closing: OffsetX={_animationDoorOffsetX}, OffsetY={_animationDoorOffsetY}");
+    }
+
+    private void Shoot(Vector2 direction)
+    {
+        var firePosition = MapPosition + Size64.Center + new Vector2(MathF.Cos(_animationCannonRotation), MathF.Sin(_animationCannonRotation)) * 32f;
+        var fireVector = direction;
+        if (fireVector != Vector2.Zero) fireVector.Normalize();
+        fireVector *= ShootVelocity;
+        var projectile = new ProjectileInfo(ProjectileType.BlueBall, firePosition, fireVector, 1f, CollisionType.ProjectileEnemy);
+        Global.World.ProjectileManager.Register(projectile);
     }
 
     #endregion
@@ -237,6 +266,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         }
         if (state == TurretState.Active)
         {
+            _fireDelay.IsActive = true;
             Global.World.CollisionManager.Register(this);
         }
 
@@ -244,7 +274,9 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
         if (state == TurretState.Destroyed)
         {
+            _closeWorkflow.IsActive = false;
             _closeWorkflow.Reset();
+            _openWorkflow.IsActive = false;
             _openWorkflow.Reset();
         }
     }
@@ -279,7 +311,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size64.Point);
 
-    public Rectangle[] CollisionRectangles => [ Clayton ];
+    public Rectangle[] CollisionRectangles => [Clayton];
 
     public CollisionType CollisionType => CollisionType.Turret;
 
@@ -288,9 +320,9 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public void OnCollide(ICollision other)
     {
         if (State != TurretState.Active) return;
-        
+
         var explosionInfo = new ExplosionInfo(MapPosition, 64);
-        
+
         Global.World.ExplosionManager.Register(explosionInfo);
 
         Global.World.CollisionManager.UnRegister(this);
@@ -312,6 +344,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     internal TurretSprite Sprite => Manager.Sprite;
     internal Vector2 Target { get; private set; } = Vector2.Zero;
     public TurretStyle Style { get; set; } = TurretStyle.Style1;        // Default style
+    public float ShootVelocity => 5f;
 
 }
 

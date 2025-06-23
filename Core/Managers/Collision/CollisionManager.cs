@@ -24,7 +24,9 @@ public class CollisionManager : IUpdate, IDraw
 
     public ICollision CheckClaytonsCollision(ICollision a)
     {
-        var overlapping = _cold.Where(c => c.Clayton.Intersects(a.Clayton));
+        var overlapping = _cold
+                            .Union(_hot)
+                            .Where(c => c.Clayton.Intersects(a.Clayton));
         foreach (var clayton in overlapping)
         {
             return clayton;
@@ -60,9 +62,9 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        // For each hot, see if it intersects with a cold (Claytons)
         for (int i = _hot.Count - 1; i >= 0; i--)
         {
+            if (i >= _hot.Count) continue;          // Safety check in case of two projectiles colliding and removing each other
             var hot = _hot[i];
             var collision = CheckClaytonsCollision(hot);
             if (collision is null) continue;

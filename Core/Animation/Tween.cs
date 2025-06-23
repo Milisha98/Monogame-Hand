@@ -19,8 +19,8 @@ public class Tween
 
     public float Update(GameTime gameTime)
     {
-        if (_isCompleted)
-            return 1f;
+        if (IsActive == false) return 0f;
+        if (_isCompleted) return 1f;
 
         _elapsedTime += gameTime.ElapsedGameTime;
 
@@ -40,5 +40,6 @@ public class Tween
         _isCompleted = false;
     }
 
+    public bool IsActive { get; set; } = true;
     public bool IsComplete => _isCompleted;
 }
