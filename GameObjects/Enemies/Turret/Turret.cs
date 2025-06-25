@@ -64,26 +64,23 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         UpdateRising();
         UpdateLowering();
         UpdateClosing();
-        UpdateActive();
 
-    }
-
-    private void UpdateActive()
-    {
-        if (State != TurretState.Active) return;
-
+        // Turn the turret to face the player
         Vector2 playerPosition = Global.World.Player.MapPosition;
         Vector2 direction = playerPosition - MapPosition;
-
         _animationCannonRotation = MathF.Atan2(direction.Y, direction.X);
 
-        if (_fireDelay.IsComplete)
+        // Shoot
+        if (State == TurretState.Active && _fireDelay.IsComplete)
         {
             Shoot(direction);
             _fireDelay.Reset();
         }
 
+
+
     }
+
 
     private void UpdateOpening()
     {

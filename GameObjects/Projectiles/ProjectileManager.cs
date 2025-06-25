@@ -20,7 +20,7 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
             { ProjectileType.RedBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
             { ProjectileType.BlueBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[1]) },
             { ProjectileType.GreyBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[2]) },
-            //             { ProjectileType.Laser, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
+            { ProjectileType.Laser, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
         };
     }
 
@@ -41,9 +41,15 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void Register(ProjectileInfo projectileInfo)
     {
-        var projectile = new Projectile(projectileInfo);
-        _projectiles.Add(projectile);
-        Global.World.CollisionManager.Register(projectile);
+        int count = projectileInfo.ProjectileType == ProjectileType.Laser ? 8 : 1;
+        for (int i = 0; i < count; i++)
+        {
+            var newInfo = projectileInfo with { MapPosition = projectileInfo.MapPosition + new Vector2(0, i * 4) };     // Offset for lasers
+            var projectile = new Projectile(newInfo);
+            _projectiles.Add(projectile);
+            Global.World.CollisionManager.Register(projectile);
+        }
+
     }
 
     public void Unregister(Projectile projectile)

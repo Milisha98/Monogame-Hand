@@ -13,11 +13,6 @@ namespace Hands.GameObjects;
 internal class Player : IGameObject, IMapPosition
 {    
     private readonly Tween _startTween;
-
-    private ContentManager _contentManager;
-    private Texture2D _texture;
-    private Dictionary<int, SpriteFrame> _frames;
-
     private Vector2 _shadowOffset = new Vector2(0, 0);
     private float _height = 0;
     private float _zoom = 0.8f;
@@ -25,14 +20,13 @@ internal class Player : IGameObject, IMapPosition
     public Player()
     {
         _startTween = new Tween(TimeSpan.FromSeconds(1f));
-        MainWeapon = new DefaultLaser();
+        MainWeapon = new DefaultWeapon(); // Default weapon
     }
 
     public void LoadContent(ContentManager contentManager)
     {
-        _contentManager = contentManager;
-        _texture = contentManager.Load<Texture2D>("Player");
-        _frames = SpriteHelper.CreateFramesFromTexture(_texture, Size48.Point);
+        Texture = contentManager.Load<Texture2D>("Player");
+        Frames = SpriteHelper.CreateFramesFromTexture(Texture, Size48.Point);
         MainWeapon.LoadContent(contentManager);
     }
 
@@ -79,10 +73,11 @@ internal class Player : IGameObject, IMapPosition
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_texture, MapPosition - Size48.Center + _shadowOffset, _frames[1].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, _height);
-        spriteBatch.Draw(_texture, MapPosition - Size48.Center, _frames[0].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, 0f);
+        spriteBatch.Draw(Texture, MapPosition - Size48.Center + _shadowOffset, Frames[1].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, _height);
+        MainWeapon.DrawShadow(spriteBatch);
 
-        MainWeapon.Draw(spriteBatch);
+        spriteBatch.Draw(Texture, MapPosition - Size48.Center, Frames[0].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, 0f);
+        MainWeapon.DrawWeapon(spriteBatch);
 
         DrawCollisionBox(spriteBatch);
     }
@@ -100,6 +95,10 @@ internal class Player : IGameObject, IMapPosition
 
     public Vector2 MapPosition          { get; set; } = Global.World.GlobalPlayerPosition;
     public float MovementSpeed          { get; set; } = 0.35f;
+
+    public Texture2D Texture            { get; private set; }
+    public Dictionary<int, SpriteFrame> Frames 
+                                        { get; private set; } = new Dictionary<int, SpriteFrame>();
 
     // Weapons
     public IWeapon MainWeapon           { get; set; }

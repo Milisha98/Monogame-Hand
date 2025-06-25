@@ -1,5 +1,4 @@
 ﻿- Exact hit detection
 	- Only care about the first half
-- New Weapon - Side lasers
 
 

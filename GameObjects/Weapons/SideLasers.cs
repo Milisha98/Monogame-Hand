@@ -7,14 +7,14 @@ using Microsoft.Xna.Framework.Content;
 using Input = Microsoft.Xna.Framework.Input;
 
 namespace Hands.GameObjects.Weapons;
-internal class DefaultLaser : IWeapon
+internal class SideLasers : IWeapon
 {
-    private static readonly WeaponInfo _defaultWeaponInfo = new(Damage: 1f, ShootDelay: 0.25f, ShootVelocity: 5f);
+    private static readonly WeaponInfo _defaultWeaponInfo = new(Damage: 1f, ShootDelay: 0.2f, ShootVelocity: 15f);
     private readonly WeaponInfo _weaponInfo;
     private readonly Tween _shootTween;
 
-    public DefaultLaser() : this(_defaultWeaponInfo) { }
-    public DefaultLaser(WeaponInfo weaponInfo)
+    public SideLasers() : this(_defaultWeaponInfo) { }
+    public SideLasers(WeaponInfo weaponInfo)
     {
         _weaponInfo = weaponInfo;
         _shootTween = new Tween(TimeSpan.FromSeconds(weaponInfo.ShootDelay));
@@ -22,7 +22,7 @@ internal class DefaultLaser : IWeapon
     }
     public void LoadContent(ContentManager contentManager)
     {
-        // Do nothing for this default weapon
+        // Do nothing for this weapon
     }
 
     public void Update(GameTime gameTime)
@@ -35,14 +35,21 @@ internal class DefaultLaser : IWeapon
             _shootTween.Reset();
 
             // Create and shoot the projectile
-            var info = new ProjectileInfo(ProjectileType.RedBall, MapPosition, new Vector2(0, -ShootVelocity), 1f, CollisionType.ProjectilePlayer);
-            Global.World.ProjectileManager.Register(info);
+            var left  = new ProjectileInfo(ProjectileType.Laser, MapPosition, new Vector2(0, -ShootVelocity), 1f, CollisionType.ProjectilePlayer);
+            var right = new ProjectileInfo(ProjectileType.Laser, MapPosition + Size48.Width, new Vector2(0, -ShootVelocity), 1f, CollisionType.ProjectilePlayer);
+            Global.World.ProjectileManager.Register(left);
+            Global.World.ProjectileManager.Register(right);
         }
     }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public void DrawShadow(SpriteBatch spriteBatch)
     {
-        // Do nothing for this default weapon
+        var shadowOffset = new Vector2(12, 12);
+        spriteBatch.Draw(Global.World.Player.Texture, MapPosition + shadowOffset, Global.World.Player.Frames[3].SourceRectangle, Color.White);      // Left Shadow
+    }
+    public void DrawWeapon(SpriteBatch spriteBatch)
+    {
+        spriteBatch.Draw(Global.World.Player.Texture, MapPosition, Global.World.Player.Frames[2].SourceRectangle, Color.White);                     // Right Laser
     }
 
     #region Events
@@ -54,11 +61,11 @@ internal class DefaultLaser : IWeapon
     }
 
     #endregion
-    
+
     public bool     CanShoot        { get; private set; }
     public float    ShootVelocity   => _weaponInfo.ShootVelocity;
     public float    ShootDelay      => _weaponInfo.ShootDelay;
     public float    Damage          => _weaponInfo.Damage;
     public Player   Player          => Global.World.Player;
-    public Vector2  MapPosition     => Player.MapPosition - Size48.Size + Size48.HalfWidth - Size8.HalfWidth;
+    public Vector2 MapPosition      => Player.MapPosition - Size48.Size;
 }

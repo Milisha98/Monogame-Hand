@@ -26,7 +26,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
         spriteBatch.Draw(sprite.Texture, MapPosition, sprite.Frame.SourceRectangle, Color.White);
     }
 
-    #region Events
+    #region ICollision
 
     public void OnCollide(ICollision other)
     {
@@ -35,16 +35,17 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
         Global.World.ProjectileManager.Unregister(this);
     }
 
+    // Collision Properties
+    public Rectangle Clayton => new Rectangle((MapPosition - Size8.Center).ToPoint(), Size8.Point);
+    public Rectangle[] CollisionRectangles => [Clayton];
+    public CollisionType CollisionType => _info.CollisionType;
+    public bool IsHot => true; // Projectiles are always active
+
     #endregion
 
     private ProjectileType ProjectileType => _info.ProjectileType;
     public Vector2 MapPosition { get; private set; }
 
-    public Rectangle Clayton => new Rectangle((MapPosition - Size8.Center).ToPoint(), Size8.Point);
 
-    public Rectangle[] CollisionRectangles => [ Clayton ];
-
-    public CollisionType CollisionType => _info.CollisionType;
-    public bool IsHot => true; // Projectiles are always active
 
 }
