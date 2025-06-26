@@ -1,36 +1,39 @@
 ﻿using Hands.Sprites;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Collision;
 public class CollisionManager : IUpdate, IDraw
 {
-    public List<ICollision> _cold = new();
-    public List<ICollision> _hot = new();
+    public ConcurrentDictionary<ICollision, byte> _cold = new();
+    public ConcurrentDictionary<ICollision, byte> _hot = new();
+
     public void Register(ICollision collision)
     {
         if (collision.IsHot)
-            _hot.Add(collision);
+            _hot.TryAdd(collision, 0);
         else
-            _cold.Add(collision);
+            _cold.TryAdd(collision, 0);
     }
+
     public void UnRegister(ICollision collision)
     {
         if (collision.IsHot)
-            _hot.Remove(collision);
+            _hot.TryRemove(collision, out _);
         else
-            _cold.Remove(collision);
+            _cold.TryRemove(collision, out _);
     }
 
     public ICollision CheckClaytonsCollision(ICollision a)
     {
-        var overlapping = _cold
-                            .Union(_hot)
-                            .Where(c => c.Clayton.Intersects(a.Clayton));
-        foreach (var clayton in overlapping)
-        {
-            return clayton;
-        }
+        foreach (var c in _cold.Keys)
+            if (c.Clayton.Intersects(a.Clayton))
+                return c;
+        foreach (var c in _hot.Keys)
+            if (c.Clayton.Intersects(a.Clayton) && !ReferenceEquals(c, a))
+                return c;
         return null;
     }
 
@@ -62,22 +65,32 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        for (int i = _hot.Count - 1; i >= 0; i--)
-        {
-            if (i >= _hot.Count) continue;          // Safety check in case of two projectiles colliding and removing each other
-            var hot = _hot[i];
-            var collision = CheckClaytonsCollision(hot);
-            if (collision is null) continue;
-            bool isClaytonCollision = IsCollisionWeCareAbout(hot.CollisionType, collision.CollisionType);
-            if (isClaytonCollision)
-            {
-                // TODO: Do a more thorough collision check here
+        var markForDestroy = new List<ICollision>();
 
-                // Handle the collision, e.g., log it, apply effects, etc.
-                System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
-                hot.OnCollide(collision);
-                collision.OnCollide(hot);
-            }
+
+        Parallel.ForEach(_hot.Keys, hot =>
+        {
+            var collision = CheckClaytonsCollision(hot);
+            if (collision is null) return;
+
+            if (!IsCollisionWeCareAbout(hot.CollisionType, collision.CollisionType))
+                return;
+
+            // Handle the collision
+            System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
+            hot.OnCollide(collision);
+            collision.OnCollide(hot);
+
+            if (_hot.ContainsKey(hot))
+                markForDestroy.Add(hot);
+            if (_hot.ContainsKey(collision))
+                markForDestroy.Add(collision);
+        });
+
+        // Remove all marked collisions after the loop
+        foreach (var item in markForDestroy.Distinct())
+        {
+            _hot.TryRemove(item, out _);
         }
     }
 
@@ -85,13 +98,11 @@ public class CollisionManager : IUpdate, IDraw
     {
         if (Global.DebugShowCollisionBoxes == false) return;
         Texture2D texture = spriteBatch.BlankTexture();
-        foreach (Rectangle clayton in _hot.Select(c => c.Clayton))
+        foreach (Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
         {
             spriteBatch.Draw(texture, clayton, Color.Red);
         }
     }
-
-
 }
 
 public enum CollisionType

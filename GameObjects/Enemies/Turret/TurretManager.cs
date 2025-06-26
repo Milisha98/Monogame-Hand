@@ -1,9 +1,9 @@
 ﻿using Hands.Core;
-using Hands.Core.Managers.Collision;
 using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Enemies.Turret;
 internal class TurretManager : ILoadContent, IUpdate, IDraw
@@ -29,18 +29,18 @@ internal class TurretManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        foreach (var turret in Turrets)
+        Parallel.ForEach(Turrets, turret =>
         {
             turret.Update(gameTime);
-        }
+        });
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        foreach (var turret in Turrets)
+        Parallel.ForEach(Turrets, turret =>
         {
             turret.Draw(spriteBatch);
-        }
+        });
     }
 
     //

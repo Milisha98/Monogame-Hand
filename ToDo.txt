@@ -1,4 +1,7 @@
-﻿- Exact hit detection
+﻿- Optimization:
+	. Laser not using multiple sprites
+	. Parallel.Foreach
+- Exact hit detection
 	- Only care about the first half
 
 

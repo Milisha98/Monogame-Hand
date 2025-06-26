@@ -1,6 +1,7 @@
 ﻿using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Smoke;
 public class SmokeManager : ILoadContent, IUpdate, IDraw
@@ -9,6 +10,10 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public void Register(SmokeAreaInfo info)
     {
+        // Optimization: Pre-allocate capacity if needed
+        if (_particles.Capacity < _particles.Count + info.Count)
+            _particles.Capacity = _particles.Count + info.Count;
+
         for (int i = 0; i < info.Count; i++)
         {
             // Generate a random position within the given area
@@ -29,19 +34,19 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
     public void Update(GameTime gameTime)
     {
         if (gameTime.IsRunningSlowly) return;
-        foreach (var smoke in _particles)
+        Parallel.ForEach(_particles, smoke =>
         {
             smoke.Update(gameTime);
-        }
+        });
         _particles.RemoveAll(s => s.IsComplete);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        foreach (var explosion in _particles)
+        Parallel.ForEach(_particles, smoke =>
         {
-            explosion.Draw(spriteBatch);
-        }
+            smoke.Draw(spriteBatch);
+        });
     }
 
     //

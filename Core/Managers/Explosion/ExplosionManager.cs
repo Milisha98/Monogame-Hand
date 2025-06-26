@@ -1,8 +1,10 @@
 ﻿using Hands.Core.Sprites;
+using Hands.GameObjects.Enemies.Turret;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Explosion;
 public class ExplosionManager : ILoadContent, IUpdate, IDraw
@@ -26,24 +28,22 @@ public class ExplosionManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        // Update all explosions and remove those that are finished
-        for (int i = _explosions.Count - 1; i >= 0; i--)
+        // Update all explosions
+        Parallel.ForEach(_explosions, explosion =>
         {
-            var explosion = _explosions[i];
             explosion.Update(gameTime);
-            if (explosion.IsComplete)
-            {
-                _explosions.RemoveAt(i);
-            }
-        }
+        });
+
+        // Remove completed explosions
+        _explosions.RemoveAll(e => e.IsComplete);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        foreach (var explosion in _explosions)
+        Parallel.ForEach(_explosions, explosion =>
         {
             explosion.Draw(spriteBatch);
-        }
+        });
     }
 
     //

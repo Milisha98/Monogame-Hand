@@ -1,5 +1,6 @@
 ﻿using Hands.GameObjects.Enemies.Turret;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hands.Core.Managers;
 internal class SleepManager : IUpdate
@@ -20,7 +21,7 @@ internal class SleepManager : IUpdate
 
     public void Update(GameTime gameTime)
     {
-        foreach (var target in _register)
+        Parallel.ForEach(_register, target =>
         {
             float distanceToPlayer = Math.Abs(target.MapPosition.Y - Global.World.Player.MapPosition.Y);
             //System.Diagnostics.Debug.WriteLine($"Distance to Player: {distanceToPlayer} - Target: {target.GetType().Name}");
@@ -34,7 +35,7 @@ internal class SleepManager : IUpdate
                 if (target.IsAsleep)
                     target.OnSisterAwake();
             }
-        }
+        });
     }
 
 }

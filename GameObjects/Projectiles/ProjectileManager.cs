@@ -4,6 +4,7 @@ using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Projectiles;
 internal class ProjectileManager : ILoadContent, IUpdate, IDraw
@@ -26,17 +27,17 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        foreach (var projectile in _projectiles)
+        Parallel.ForEach(_projectiles, projectile =>
         {
             projectile.Update(gameTime);
-        }
+        });
     }
     public void Draw(SpriteBatch spriteBatch)
     {
-        foreach (var projectile in _projectiles)
+        Parallel.ForEach(_projectiles, projectile =>
         {
             projectile.Draw(spriteBatch);
-        }
+        });
     }
 
     public void Register(ProjectileInfo projectileInfo)
