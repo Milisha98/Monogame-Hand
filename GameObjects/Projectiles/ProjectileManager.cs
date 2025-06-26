@@ -5,6 +5,7 @@ using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Hands.GameObjects.Projectiles;
 internal class ProjectileManager : ILoadContent, IUpdate, IDraw
@@ -31,7 +32,15 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
         {
             projectile?.Update(gameTime);
         });
+
+        // Unregister all projectiles marked for deletion
+        var toRemove = _projectiles.Where(p => p?.MarkForDeletion ?? false).ToList();
+        foreach (var projectile in toRemove)
+        {
+            Unregister(projectile);
+        }
     }
+
     public void Draw(SpriteBatch spriteBatch)
     {
         Parallel.ForEach(_projectiles, projectile =>

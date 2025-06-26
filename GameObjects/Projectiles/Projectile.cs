@@ -18,6 +18,12 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     {
         Vector2 v = _info.Vector;
         MapPosition += v;
+
+        // Mark for deletion if the projectile that are off the screen
+        if (Math.Abs(MapPosition.Y - Global.World.Player.MapPosition.Y) > Global.Graphics.RenderHeight)
+        {
+            MarkForDeletion = true;
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
@@ -46,6 +52,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     private ProjectileType ProjectileType => _info.ProjectileType;
     public Vector2 MapPosition { get; private set; }
 
+    public bool MarkForDeletion { get; set; } = false;
 
 
 }
