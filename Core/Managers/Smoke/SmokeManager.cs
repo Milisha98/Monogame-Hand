@@ -33,7 +33,7 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        if (gameTime.IsRunningSlowly) return;
+        //
         Parallel.ForEach(_particles, smoke =>
         {
             smoke.Update(gameTime);

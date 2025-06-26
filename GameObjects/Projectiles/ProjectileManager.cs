@@ -29,14 +29,14 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
     {
         Parallel.ForEach(_projectiles, projectile =>
         {
-            projectile.Update(gameTime);
+            projectile?.Update(gameTime);
         });
     }
     public void Draw(SpriteBatch spriteBatch)
     {
         Parallel.ForEach(_projectiles, projectile =>
         {
-            projectile.Draw(spriteBatch);
+            projectile?.Draw(spriteBatch);
         });
     }
 
