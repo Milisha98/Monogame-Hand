@@ -7,14 +7,14 @@ public class Smoke : IUpdate, IDraw
 {
     public const float Duration = 5.0f; // Default duration for Smoke animations
 
-    private readonly Tween _startTween;
-    private readonly Tween _durationTween;
-    private readonly float _scale = 1f;
-    private readonly float _rotation;
-    private readonly Vector2 _movement;
+    private Tween _startTween;
+    private Tween _durationTween;
+    private float _scale = 1f;
+    private float _rotation;
+    private Vector2 _movement;
     private int _tint;
 
-    public Smoke(Vector2 mapPosition, TimeSpan startDelay)
+    public void Activate(Vector2 mapPosition, TimeSpan startDelay)
     {
         var rnd = new Random();
 

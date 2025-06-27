@@ -6,22 +6,33 @@ using System.Threading.Tasks;
 namespace Hands.Core.Managers.Smoke;
 public class SmokeManager : ILoadContent, IUpdate, IDraw
 {
-    private readonly List<Smoke> _particles = new();
+    private List<Smoke> _objectCache = [];
+    private List<Smoke> _particles   = [];
+
+    public SmokeManager()
+    {
+        const int initialCapacity = 200; // Initial capacity for the smoke particles
+        _particles      = new List<Smoke>(initialCapacity);
+        _objectCache    = new List<Smoke>(initialCapacity);
+        for (int i = 0; i < initialCapacity; i++)
+        {
+            _objectCache.Add(new Smoke());
+        }
+    }
 
     public void Register(SmokeAreaInfo info)
     {
-        // Optimization: Pre-allocate capacity if needed
-        if (_particles.Capacity < _particles.Count + info.Count)
-            _particles.Capacity = _particles.Count + info.Count;
-
-        for (int i = 0; i < info.Count; i++)
+        // Move the smoke particles from the cache to the active list
+        for (int i = 0; i < info.Count && _objectCache.Count > 0; i++)
         {
             // Generate a random position within the given area
             float x = info.Area.X + Random.Shared.NextSingle() * info.Area.Width;
             float y = info.Area.Y + Random.Shared.NextSingle() * info.Area.Height;
             var position = new Vector2(x, y);
 
-            var smoke = new Smoke(position, TimeSpan.FromSeconds(info.StartDelay));
+            var smoke = _objectCache[0];
+            _objectCache.RemoveAt(0);
+            smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
             _particles.Add(smoke);
         }
     }
@@ -33,11 +44,12 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        //
         Parallel.ForEach(_particles, smoke =>
         {
             smoke.Update(gameTime);
         });
+        // Move completed particles back to the cache
+        _objectCache.AddRange(_particles.FindAll(s => s.IsComplete));
         _particles.RemoveAll(s => s.IsComplete);
     }
 
