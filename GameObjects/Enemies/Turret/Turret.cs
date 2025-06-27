@@ -74,7 +74,6 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         if (State == TurretState.Active && _fireDelay.IsComplete)
         {
             Shoot(direction);
-            _fireDelay.Reset();
         }
 
 
@@ -124,6 +123,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         fireVector *= ShootVelocity;
         var projectile = new ProjectileInfo(ProjectileType.BlueBall, firePosition, fireVector, 1f, CollisionType.ProjectileEnemy);
         Global.World.ProjectileManager.Register(projectile);
+        _fireDelay.Reset();
     }
 
     #endregion

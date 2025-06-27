@@ -1,24 +1,45 @@
 ﻿using Hands.Core.Sprites;
-using Hands.GameObjects.Enemies.Turret;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Explosion;
 public class ExplosionManager : ILoadContent, IUpdate, IDraw
 {
-    private readonly List<Explosion> _explosions = new();
+    private List<Explosion> _objectCache = [];
+    private List<Explosion> _explosions  = [];
 
-    public void Register(ExplosionInfo explosion)
+    public ExplosionManager()
     {
-        var newExplosion = new Explosion(explosion);
-        _explosions.Add(newExplosion);
+        const int maxExplosions = 20;       // Limit the number of explosions to prevent memory issues
+        _objectCache = new List<Explosion>(maxExplosions);
+        _explosions = new List<Explosion>(maxExplosions);
+        for (int i = 0; i < maxExplosions; i++)
+        {
+            _objectCache.Add(new Explosion());
+        }
+    }
+
+    public void Register(ExplosionInfo info)
+    {
+        Explosion explosion = null;
+        if (_objectCache.Any())
+        {
+            explosion = _objectCache[0];
+            _objectCache.RemoveAt(0);
+        }
+       
+        if (explosion is null) explosion = new Explosion();
+
+        explosion.Activate(info);
+        _explosions.Add(explosion);
     }
 
     public void UnRegister(Explosion explosion)
     {
+        _objectCache.Add(explosion);
         _explosions.Remove(explosion);
     }
     public void LoadContent(ContentManager contentManager)

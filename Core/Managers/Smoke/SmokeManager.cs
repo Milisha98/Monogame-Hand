@@ -1,6 +1,7 @@
 ﻿using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Smoke;
@@ -11,7 +12,7 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public SmokeManager()
     {
-        const int initialCapacity = 200; // Initial capacity for the smoke particles
+        const int initialCapacity = 200;        // Initial capacity for the smoke particles
         _particles      = new List<Smoke>(initialCapacity);
         _objectCache    = new List<Smoke>(initialCapacity);
         for (int i = 0; i < initialCapacity; i++)
@@ -30,10 +31,21 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
             float y = info.Area.Y + Random.Shared.NextSingle() * info.Area.Height;
             var position = new Vector2(x, y);
 
-            var smoke = _objectCache[0];
-            _objectCache.RemoveAt(0);
+            Smoke smoke;
+            if (_objectCache.Any())
+            {
+                // Recycle an existing smoke particle
+                smoke = _objectCache[0];
+                _objectCache.RemoveAt(0);
+            }
+            else
+            {
+                // Create a new smoke particle if the cache is empty
+                smoke = new Smoke();
+            }
             smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
             _particles.Add(smoke);
+
         }
     }
 

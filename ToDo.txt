@@ -1,6 +1,9 @@
 ﻿- Optimization:
 	. Laser not using multiple sprites
-	. Parallel.Foreach
+	x Smoke uses an Object Cache
+	. Explosion uses an Object Cache
+	x Projectile uses an Object Cache
+
 - Exact hit detection
 	- Only care about the first half
 

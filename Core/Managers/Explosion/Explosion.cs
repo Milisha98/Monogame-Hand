@@ -7,17 +7,19 @@ public class Explosion : IUpdate, IDraw
 {
     public const float Duration = 0.5f; // Default duration for explosion animations
 
-    private readonly Tween _tween;
-    private Color _color = Color.White;
+    private Tween _tween;
+    private Color _color;
     private float _scale = 1f;
     private float _rotation;
 
-    public Explosion(ExplosionInfo info)
+    public void Activate(ExplosionInfo info)
     {
         MapPosition = info.MapPosition;
         _tween = new Tween(TimeSpan.FromSeconds(Duration));
         _rotation = Random.Shared.NextSingle() * MathF.Tau;
         _scale = (float)(info.Size / 64f) * 3;
+        _color = Color.White;
+        Frame = 0;
     }
 
     public void Update(GameTime gameTime)
@@ -25,7 +27,7 @@ public class Explosion : IUpdate, IDraw
         if (IsComplete) return;
 
         float percent = _tween.Update(gameTime);
-        Frame = (int)(percent * ((float)Sprite.Frames.Count));
+        Frame = (int)(percent * Sprite.Frames.Count);
 
         int alpha = Math.Max(125, (int)(255 * (1f - percent)));
         _color = new Color(255, 255, 255, alpha);
@@ -40,7 +42,7 @@ public class Explosion : IUpdate, IDraw
     }
 
     public bool IsComplete => _tween.IsComplete;
-    public Vector2 MapPosition { get; }
+    public Vector2 MapPosition { get; private set; }
     public int Frame { get; private set; } = 0;
     internal ExplosionSprite Sprite => Global.World.ExplosionManager.Sprite;
 }

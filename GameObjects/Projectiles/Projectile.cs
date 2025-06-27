@@ -2,16 +2,22 @@
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Sprites;
+using System.Diagnostics;
 
 namespace Hands.GameObjects.Projectiles;
 internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
 {
-    private readonly ProjectileInfo _info;
-
-    public Projectile(ProjectileInfo projectileInfo)
+    private ProjectileInfo _info;
+    public Projectile()
+    {
+        _info = new ProjectileInfo(ProjectileType.RedBall, Vector2.Zero, Vector2.Zero, 0f, CollisionType.ProjectilePlayer);
+    }
+    public void Activate(ProjectileInfo projectileInfo)
     {
         _info = projectileInfo;
         MapPosition = projectileInfo.MapPosition;
+        MarkForDeletion = false;
+        Global.World.CollisionManager.Register(this);
     }
 
     public void Update(GameTime gameTime)
@@ -36,9 +42,11 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
 
     public void OnCollide(ICollision other)
     {
-        var explosionInfo = new ExplosionInfo(MapPosition, 8);
+        var explosionInfo = new ExplosionInfo(MapPosition - Size32.Size, 8);
         Global.World.ExplosionManager.Register(explosionInfo);
         Global.World.ProjectileManager.Unregister(this);
+        Global.World.CollisionManager.UnRegister(this);
+
     }
 
     // Collision Properties

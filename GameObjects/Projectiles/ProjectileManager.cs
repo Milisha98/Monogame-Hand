@@ -4,13 +4,26 @@ using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Projectiles;
 internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 {
+    private List<Projectile> _objectCache = [];
     private List<Projectile> _projectiles = [];
+    private readonly object _projectilesLock = new();
+
+    public ProjectileManager()
+    {
+        const int initialCapacity = 200; // Adjust based on expected number of projectiles
+        _objectCache = new List<Projectile>(initialCapacity);
+        _projectiles = new List<Projectile>(initialCapacity);
+        for (int i = 0; i < initialCapacity; i++)
+        {
+            _objectCache.Add(new Projectile());
+        }
+    }
 
     public void LoadContent(ContentManager contentManager)
     {
@@ -28,10 +41,11 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        Parallel.ForEach(_projectiles, projectile =>
+        // Too many weird things happen with parallel updates, so we will use a simple foreach loop
+        foreach (var projectile in _projectiles)
         {
             projectile?.Update(gameTime);
-        });
+        }
 
         // Unregister all projectiles marked for deletion
         var toRemove = _projectiles.Where(p => p?.MarkForDeletion ?? false).ToList();
@@ -43,29 +57,37 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        Parallel.ForEach(_projectiles, projectile =>
+        foreach (var projectile in _projectiles)
         {
             projectile?.Draw(spriteBatch);
-        });
+        }
     }
 
     public void Register(ProjectileInfo projectileInfo)
     {
-        int count = projectileInfo.ProjectileType == ProjectileType.Laser ? 8 : 1;
-        for (int i = 0; i < count; i++)
+        // Take advantage of the object cache to reuse projectiles
+        Projectile projectile;
+        if (_objectCache.Any())
         {
-            var newInfo = projectileInfo with { MapPosition = projectileInfo.MapPosition + new Vector2(0, i * 4) };     // Offset for lasers
-            var projectile = new Projectile(newInfo);
-            _projectiles.Add(projectile);
-            Global.World.CollisionManager.Register(projectile);
+            projectile = _objectCache[0];
+            _objectCache.RemoveAt(0);
         }
-
+        else
+        {
+            projectile = new Projectile();
+        }
+        projectile.Activate(projectileInfo);
+        _projectiles.Add(projectile);
     }
 
     public void Unregister(Projectile projectile)
     {
-        _projectiles.Remove(projectile);
-        Global.World.CollisionManager.UnRegister(projectile);
+        lock (_projectilesLock)
+        {
+            _objectCache.Add(projectile);
+            if (_projectiles.Contains(projectile))
+                _projectiles.Remove(projectile);
+        }
     }
 
     public Dictionary<ProjectileType, ProjectileSprite> Sprite { get; private set; }
