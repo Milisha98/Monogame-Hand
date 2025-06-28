@@ -5,7 +5,6 @@ using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Projectiles;
 internal class ProjectileManager : ILoadContent, IUpdate, IDraw
@@ -27,15 +26,19 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void LoadContent(ContentManager contentManager)
     {
+        var laserPoint = new Point(4, 24);
         var projectileTexture = contentManager.Load<Texture2D>("Projectiles");
         var projectileFrames = SpriteHelper.CreateFramesFromTexture(projectileTexture, Size8.Point);
 
+        var laserTexture = contentManager.Load<Texture2D>("Laser");
+        var laserFrames = SpriteHelper.CreateFramesFromTexture(laserTexture, laserPoint);
+
         Sprite = new Dictionary<ProjectileType, ProjectileSprite>
         {
-            { ProjectileType.RedBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
-            { ProjectileType.BlueBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[1]) },
-            { ProjectileType.GreyBall, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[2]) },
-            { ProjectileType.Laser, new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
+            { ProjectileType.RedBall,   new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[0]) },
+            { ProjectileType.BlueBall,  new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[1]) },
+            { ProjectileType.GreyBall,  new ProjectileSprite(Size8.Point, projectileTexture, projectileFrames[2]) },
+            { ProjectileType.Laser,     new ProjectileSprite(laserPoint,  laserTexture,      laserFrames[0])      }
         };
     }
 
@@ -91,6 +94,7 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
     }
 
     public Dictionary<ProjectileType, ProjectileSprite> Sprite { get; private set; }
+
 }
 
 public record ProjectileSprite(Point Size, Texture2D Texture, SpriteFrame Frame);
