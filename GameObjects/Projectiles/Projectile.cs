@@ -2,7 +2,6 @@
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Sprites;
-using System.Diagnostics;
 
 namespace Hands.GameObjects.Projectiles;
 internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
@@ -50,7 +49,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     }
 
     // Collision Properties
-    public Rectangle Clayton => new Rectangle((MapPosition - Size8.Center).ToPoint(), Size8.Point);
+    public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size8.Point);
     public Rectangle[] CollisionRectangles => [Clayton];
     public CollisionType CollisionType => _info.CollisionType;
     public bool IsHot => true; // Projectiles are always active
