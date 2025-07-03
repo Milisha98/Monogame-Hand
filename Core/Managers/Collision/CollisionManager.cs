@@ -1,7 +1,8 @@
 ﻿using Hands.Sprites;
+using SharpDX;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace Hands.Core.Managers.Collision;
@@ -24,6 +25,19 @@ public class CollisionManager : IUpdate, IDraw
             _hot.TryRemove(collision, out _);
         else
             _cold.TryRemove(collision, out _);
+    }
+    
+    public ICollision CheckCollision(ICollision a)
+    { 
+        ICollision b = CheckClaytonsCollision(a);
+        if (b is null) 
+            return null;
+
+        if (!IsCollisionWeCareAbout(a.CollisionType, b.CollisionType))
+            return null;
+
+        // TODO: Check a.CollisionRectangles against b.CollisionRectangles
+        return b;
     }
 
     public ICollision CheckClaytonsCollision(ICollision a)
@@ -70,11 +84,10 @@ public class CollisionManager : IUpdate, IDraw
 
         Parallel.ForEach(_hot.Keys, hot =>
         {
-            var collision = CheckClaytonsCollision(hot);
+            var collision = CheckCollision(hot);
             if (collision is null) return;
 
-            if (!IsCollisionWeCareAbout(hot.CollisionType, collision.CollisionType))
-                return;
+
 
             // Handle the collision
             System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
