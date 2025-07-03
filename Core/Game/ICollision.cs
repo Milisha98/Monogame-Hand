@@ -7,6 +7,7 @@ public interface ICollision
     public Rectangle[] CollisionRectangles { get; }
     public CollisionType CollisionType { get; }
     public bool IsHot { get; }
+    public bool ShouldRemoveOnCollision { get; }
     public void OnCollide(ICollision other);
 
 }

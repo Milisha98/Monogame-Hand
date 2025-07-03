@@ -107,9 +107,10 @@ public class CollisionManager : IUpdate, IDraw
             hot.OnCollide(collision);
             collision.OnCollide(hot);
 
-            if (_hot.ContainsKey(hot))
+            // Only remove objects that should be removed on collision
+            if (_hot.ContainsKey(hot) && hot.ShouldRemoveOnCollision)
                 markForDestroy.Add(hot);
-            if (_hot.ContainsKey(collision))
+            if (_hot.ContainsKey(collision) && collision.ShouldRemoveOnCollision)
                 markForDestroy.Add(collision);
         });
 

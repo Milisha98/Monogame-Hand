@@ -311,8 +311,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public Rectangle[] CollisionRectangles => [Clayton];
 
     public CollisionType CollisionType => CollisionType.Turret;
-
-    public bool IsHot => false;
+    public bool IsHot => State == TurretState.Active;
+    public bool ShouldRemoveOnCollision => State == TurretState.Destroyed; // Only remove when destroyed
 
     public void OnCollide(ICollision other)
     {

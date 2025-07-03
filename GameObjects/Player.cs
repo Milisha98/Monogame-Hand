@@ -4,6 +4,7 @@ using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
+using Hands.GameObjects.Projectiles;
 using Hands.GameObjects.Weapons;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
@@ -33,6 +34,9 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     public void Update(GameTime gameTime)
     {
+        // Don't update if player is dead
+        if (!IsAlive) return;
+
         // Update the Rise off the ground animation
         if (_startTween.IsComplete == false)
         {
@@ -74,6 +78,9 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     public void Draw(SpriteBatch spriteBatch)
     {
+        // Don't draw the player if they're dead
+        if (!IsAlive) return;
+
         spriteBatch.Draw(Texture, MapPosition - Size48.Center + _shadowOffset, Frames[1].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, _height);
         MainWeapon.DrawShadow(spriteBatch);
 
@@ -142,6 +149,8 @@ internal class Player : IGameObject, IMapPosition, ICollision
     public CollisionType CollisionType => CollisionType.Player;
 
     public bool IsHot => true;
+    
+    public bool ShouldRemoveOnCollision => !IsAlive; // Only remove when player dies
 
     private void DrawCollisionBox(SpriteBatch spriteBatch)
     {
@@ -157,6 +166,32 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     public void OnCollide(ICollision other)
     {
+        // Get damage from projectile if it's a projectile collision
+        int damage = 1; // Default damage
+        if (other is Projectile projectile)
+        {
+            damage = (int)projectile.Damage;
+        }
+
+        // Apply damage to player
+        TakeDamage(damage);
+
+        System.Diagnostics.Debug.WriteLine($"Player took {damage} damage from {other.CollisionType}. Health: {Health}/{MaxHealth}");
+
+        // Only explode and destroy when health reaches zero
+        if (!IsAlive)
+        {
+            DestroyPlayer();
+        }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        Health = Math.Max(0, Health - damage);
+    }
+
+    private void DestroyPlayer()
+    {
         // Create explosion at player center
         var explosionInfo = new ExplosionInfo(Center, 48);
         Global.World.ExplosionManager.Register(explosionInfo);
@@ -170,8 +205,9 @@ internal class Player : IGameObject, IMapPosition, ICollision
         // Unregister from collision system to prevent further collisions
         Global.World.CollisionManager.UnRegister(this);
 
+        // Make player disappear (invisible)
         // TODO: Add game over logic, respawn logic, or other destruction handling here
-        System.Diagnostics.Debug.WriteLine($"Player destroyed by {other.CollisionType} at {Center}");
+        System.Diagnostics.Debug.WriteLine($"Player destroyed at {Center}");
     }
 
     #endregion
@@ -180,6 +216,9 @@ internal class Player : IGameObject, IMapPosition, ICollision
     public Vector2 MapPosition          { get; set; } = Global.World.GlobalPlayerPosition;
     public Vector2 Center               => MapPosition - Size48.Center; // Center of collision box
     public float MovementSpeed          { get; set; } = 0.35f;
+    public int Health                   { get; private set; } = 5; // Player starts with 5 hitpoints
+    public int MaxHealth                { get; private set; } = 5;
+    public bool IsAlive                 => Health > 0;
 
     public Texture2D Texture            { get; private set; }
     public Dictionary<int, SpriteFrame> Frames 

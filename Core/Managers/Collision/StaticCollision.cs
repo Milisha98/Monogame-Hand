@@ -18,6 +18,7 @@ public record StaticCollision : ICollision
     public CollisionType CollisionType { get; set; } = CollisionType.Wall;
 
     public bool IsHot { get; set; } = false;
+    public bool ShouldRemoveOnCollision { get; set; } = false; // Static collisions are never removed
     public void OnCollide(ICollision other)
     {
         // Static collisions do not handle collisions, they are just barriers.        

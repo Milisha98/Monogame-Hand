@@ -53,12 +53,14 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
     public Rectangle[] CollisionRectangles => [Clayton];
     public CollisionType CollisionType => _info.CollisionType;
     public bool IsHot => true; // Projectiles are always active
+    public bool ShouldRemoveOnCollision => true; // Projectiles are always destroyed on collision
 
     #endregion
 
     private ProjectileType ProjectileType => _info.ProjectileType;
     public Vector2 MapPosition { get; private set; }
     public Vector2 Center => MapPosition + Size8.Center;
+    public float Damage => _info.Damage;
 
     public bool MarkForDeletion { get; set; } = false;
 

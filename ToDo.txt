@@ -1,4 +1,6 @@
-﻿- Exact hit detection
-	- Only care about the first half
+﻿x Player - Only dies after 5 hits.
+. Need to add other enemies.
+. Need to add a scoring system.
+
 
 
