@@ -36,8 +36,21 @@ public class CollisionManager : IUpdate, IDraw
         if (!IsCollisionWeCareAbout(a.CollisionType, b.CollisionType))
             return null;
 
-        // TODO: Check a.CollisionRectangles against b.CollisionRectangles
-        return b;
+        // Optimize by checking smaller collection first to minimize iterations
+        var (outerRects, innerRects) = a.CollisionRectangles.Length <= b.CollisionRectangles.Length 
+            ? (a.CollisionRectangles, b.CollisionRectangles)
+            : (b.CollisionRectangles, a.CollisionRectangles);
+
+        foreach (var rectOuter in outerRects)
+        {
+            foreach (var rectInner in innerRects)
+            {
+                if (rectOuter.Intersects(rectInner))
+                    return b;
+            }
+        }
+
+        return null;
     }
 
     public ICollision CheckClaytonsCollision(ICollision a)
@@ -111,9 +124,9 @@ public class CollisionManager : IUpdate, IDraw
     {
         if (Global.DebugShowCollisionBoxes == false) return;
         Texture2D texture = spriteBatch.BlankTexture();
-        foreach (Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
+        foreach (Microsoft.Xna.Framework.Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
         {
-            spriteBatch.Draw(texture, clayton, Color.Red);
+            spriteBatch.Draw(texture, clayton, Microsoft.Xna.Framework.Color.Red);
         }
     }
 }
