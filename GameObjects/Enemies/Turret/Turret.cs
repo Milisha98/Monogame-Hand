@@ -318,15 +318,16 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         if (State != TurretState.Active) return;
 
-        var explosionInfo = new ExplosionInfo(MapPosition, 64);
+        var explosionInfo = new ExplosionInfo(Center, 64);
 
         Global.World.ExplosionManager.Register(explosionInfo);
 
         Global.World.CollisionManager.UnRegister(this);
         OnChangeState(TurretState.Destroyed);
 
-        var rectangle = new Rectangle((MapPosition - Size64.Center).ToPoint(), new Point(128, 128));
-        var smokeInfo = new SmokeAreaInfo(rectangle, 50, 0.1f);
+        var smokeRadius = 64f * 1.5f; // Increase radius for better coverage
+        var smokeParticleCount = (int)(50 * 1.5f); // Scale particles with radius
+        var smokeInfo = new SmokeAreaInfo(Center, smokeRadius, smokeParticleCount, 0.1f);
         Global.World.SmokeManager.Register(smokeInfo);
     }
 
@@ -337,6 +338,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public float RateOfFire { get => _info.RoF; }
     public TurretState State { get; private set; } = TurretState.Closed;
     public Vector2 MapPosition { get; private set; }
+    public Vector2 Center => MapPosition + Size64.Center;
     internal TurretManager Manager => Global.World.TurretManager;
     internal TurretSprite Sprite => Manager.Sprite;
     internal Vector2 Target { get; private set; } = Vector2.Zero;

@@ -26,9 +26,11 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
         // Move the smoke particles from the cache to the active list
         for (int i = 0; i < info.Count && _objectCache.Count > 0; i++)
         {
-            // Generate a random position within the given area
-            float x = info.Area.X + Random.Shared.NextSingle() * info.Area.Width;
-            float y = info.Area.Y + Random.Shared.NextSingle() * info.Area.Height;
+            // Generate a random position within the given radius from center
+            float angle = Random.Shared.NextSingle() * MathF.Tau; // Random angle
+            float distance = Random.Shared.NextSingle() * info.Radius; // Random distance within radius
+            float x = info.Center.X + MathF.Cos(angle) * distance;
+            float y = info.Center.Y + MathF.Sin(angle) * distance;
             var position = new Vector2(x, y);
 
             Smoke smoke;
@@ -80,7 +82,7 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
 }
 
-public record SmokeAreaInfo(Rectangle Area, int Count, float StartDelay);
+public record SmokeAreaInfo(Vector2 Center, float Radius, int Count, float StartDelay);
 // TODO: In the future, there might be SmokeEmitterInfo for things like rockets
 
 public class SmokeSprite : ILoadContent

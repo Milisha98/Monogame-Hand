@@ -41,7 +41,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
 
     public void OnCollide(ICollision other)
     {
-        var explosionInfo = new ExplosionInfo(MapPosition - Size32.Size, 8);
+        var explosionInfo = new ExplosionInfo(Center, 8);
         Global.World.ExplosionManager.Register(explosionInfo);
         Global.World.ProjectileManager.Unregister(this);
         Global.World.CollisionManager.UnRegister(this);
@@ -58,6 +58,7 @@ internal class Projectile : IUpdate, IDraw, IMapPosition, ICollision
 
     private ProjectileType ProjectileType => _info.ProjectileType;
     public Vector2 MapPosition { get; private set; }
+    public Vector2 Center => MapPosition + Size8.Center;
 
     public bool MarkForDeletion { get; set; } = false;
 

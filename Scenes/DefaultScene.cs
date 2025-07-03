@@ -23,6 +23,7 @@ internal class DefaultScene : IScene
 
         Global.World.Player = new();
         Global.World.Player.LoadContent(contentManager);
+        Global.World.CollisionManager.Register(Global.World.Player);
 
         Global.World.TurretManager.LoadContent(contentManager);
         Global.World.ProjectileManager.LoadContent(contentManager);

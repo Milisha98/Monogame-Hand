@@ -3,7 +3,7 @@ using Hands.Core.Sprites;
 
 namespace Hands.Core.Managers.Smoke;
 
-public class Smoke : IUpdate, IDraw
+public class Smoke : IUpdate, IDraw, IMapPosition
 {
     public const float Duration = 5.0f; // Default duration for Smoke animations
 
@@ -51,14 +51,14 @@ public class Smoke : IUpdate, IDraw
         if (IsComplete) return;
         if (_startTween.IsComplete == false) return;
 
-        // Draw the explosion using the first frame
-        var center = new Vector2(100, 100);
-        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, Color, _rotation, center, _scale, SpriteEffects.None, 0);
+        // Draw the smoke using the first frame, centered
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, Color, _rotation, Size200.Center, _scale, SpriteEffects.None, 0);
     }
   
     public Color Color => new Color(_tint, _tint, _tint, _tint);
     public bool IsComplete => _durationTween.IsComplete;
     public Vector2 MapPosition { get; private set;  }
+    public Vector2 Center => MapPosition + Size200.Center;
     internal SmokeSprite Sprite => Global.World.SmokeManager.Sprite;
 }
 

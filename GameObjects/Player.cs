@@ -1,6 +1,8 @@
-﻿using Hands.Core;
+using Hands.Core;
 using Hands.Core.Animation;
 using Hands.Core.Managers.Collision;
+using Hands.Core.Managers.Explosion;
+using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
 using Hands.GameObjects.Weapons;
 using Hands.Sprites;
@@ -155,13 +157,28 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     public void OnCollide(ICollision other)
     {
-        throw new NotImplementedException();
+        // Create explosion at player center
+        var explosionInfo = new ExplosionInfo(Center, 48);
+        Global.World.ExplosionManager.Register(explosionInfo);
+
+        // Create smoke area centered around the player
+        var smokeRadius = Size96.HalfWidth.X * 1.5f;
+        var smokeParticleCount = (int)(30 * 1.5f); // Scale particles with radius
+        var smokeInfo = new SmokeAreaInfo(Center, smokeRadius, smokeParticleCount, 0.1f);
+        Global.World.SmokeManager.Register(smokeInfo);
+
+        // Unregister from collision system to prevent further collisions
+        Global.World.CollisionManager.UnRegister(this);
+
+        // TODO: Add game over logic, respawn logic, or other destruction handling here
+        System.Diagnostics.Debug.WriteLine($"Player destroyed by {other.CollisionType} at {Center}");
     }
 
     #endregion
 
 
     public Vector2 MapPosition          { get; set; } = Global.World.GlobalPlayerPosition;
+    public Vector2 Center               => MapPosition - Size48.Center; // Center of collision box
     public float MovementSpeed          { get; set; } = 0.35f;
 
     public Texture2D Texture            { get; private set; }

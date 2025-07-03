@@ -3,7 +3,7 @@ using Hands.Core.Sprites;
 
 namespace Hands.Core.Managers.Explosion;
 
-public class Explosion : IUpdate, IDraw
+public class Explosion : IUpdate, IDraw, IMapPosition
 {
     public const float Duration = 0.5f; // Default duration for explosion animations
 
@@ -37,12 +37,13 @@ public class Explosion : IUpdate, IDraw
     {
         if (IsComplete) return;
 
-        // Draw the explosion using the first frame
-        spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[Frame].SourceRectangle, _color, _rotation, Size64.Center, _scale, SpriteEffects.None, 0);
+        // Draw the explosion centered at MapPosition
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[Frame].SourceRectangle, _color, _rotation, Size64.Center, _scale, SpriteEffects.None, 0);
     }
 
     public bool IsComplete => _tween.IsComplete;
     public Vector2 MapPosition { get; private set; }
+    public Vector2 Center => MapPosition + Size64.Center;
     public int Frame { get; private set; } = 0;
     internal ExplosionSprite Sprite => Global.World.ExplosionManager.Sprite;
 }
