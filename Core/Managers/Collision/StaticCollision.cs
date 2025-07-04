@@ -5,10 +5,7 @@ public record StaticCollision : ICollision
     {
         Clayton = claytons;
         CollisionType = collisionType;
-        if (collisions?.Length == 0)
-        {
-            CollisionRectangles = [claytons];
-        }
+        CollisionRectangles = collisions is { Length: > 0 } ? collisions : [claytons];
     }
 
     public Rectangle Clayton { get; init; }

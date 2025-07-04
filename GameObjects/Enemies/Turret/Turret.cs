@@ -5,6 +5,9 @@ using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
 using Hands.GameObjects.Projectiles;
+using Hands.Sprites;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Hands.GameObjects.Enemies.Turret;
 
@@ -141,6 +144,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 DrawStyle2(spriteBatch);
                 break;
         }
+
+
     }
 
     private void DrawStyle1(SpriteBatch spriteBatch)
@@ -217,6 +222,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
         // Draw Turret Cannon
         spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[5].SourceRectangle, _animationTurretColor, _animationCannonRotation, Size64.Center, 1f, SpriteEffects.None, 0);
+
+        DrawCollisionBox(spriteBatch);
     }
 
     private void DrawDestroyed(SpriteBatch spriteBatch)
@@ -228,6 +235,20 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
         // Draw Damage   
         spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[9].SourceRectangle, _animationTurretColor, _damageRotation, Size64.Center, 1f, SpriteEffects.None, 0);
+
+        DrawCollisionBox(spriteBatch);
+    }
+
+    private void DrawCollisionBox(SpriteBatch spriteBatch)
+    {
+        if (Global.DebugShowCollisionBoxes)
+        {
+            Texture2D texture = spriteBatch.BlankTexture();
+            foreach (var r in CollisionRectangles)
+            {
+                spriteBatch.Draw(texture, r, Color.Yellow);
+            }
+        }
     }
 
     #endregion
@@ -308,7 +329,77 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size64.Point);
 
-    public Rectangle[] CollisionRectangles => [Clayton];
+    public Rectangle[] CollisionRectangles => 
+        new List<Point>
+        {
+            new Point(27, 7),
+            new Point(30, 7),
+            new Point(32, 7),
+            new Point(34, 7),
+            new Point(36, 7),
+            new Point(23, 8),
+            new Point(25, 8),
+            new Point(38, 8),
+            new Point(40, 8),
+            new Point(21, 9),
+            new Point(42, 9),
+            new Point(19, 10),
+            new Point(44, 10),
+            new Point(46, 11),
+            new Point(16, 12),
+            new Point(47, 12),
+            new Point(14, 14),
+            new Point(49, 14),
+            new Point(12, 16),
+            new Point(51, 16),
+            new Point(53, 18),
+            new Point(10, 19),
+            new Point(10, 20),
+            new Point(54, 20),
+            new Point(9, 21),
+            new Point(55, 22),
+            new Point(8, 23),
+            new Point(56, 24),
+            new Point(8, 26),
+            new Point(56, 26),
+            new Point(7, 27),
+            new Point(57, 28),
+            new Point(7, 29),
+            new Point(57, 30),
+            new Point(7, 32),
+            new Point(57, 32),
+            new Point(7, 35),
+            new Point(57, 35),
+            new Point(8, 37),
+            new Point(8, 39),
+            new Point(56, 39),
+            new Point(9, 41),
+            new Point(55, 41),
+            new Point(10, 43),
+            new Point(54, 43),
+            new Point(12, 46),
+            new Point(52, 46),
+            new Point(14, 48),
+            new Point(50, 48),
+            new Point(16, 50),
+            new Point(48, 50),
+            new Point(18, 52),
+            new Point(46, 52),
+            new Point(20, 53),
+            new Point(44, 53),
+            new Point(22, 54),
+            new Point(42, 54),
+            new Point(24, 55),
+            new Point(26, 55),
+            new Point(38, 55),
+            new Point(40, 55),
+            new Point(28, 56),
+            new Point(36, 56),
+            new Point(31, 57),
+            new Point(33, 57)
+        }
+        .Select(x => new Rectangle(MapPosition.ToPoint() + x.ToVector2().ToPoint(), new Point(1, 1)))
+        .ToArray();
 
     public CollisionType CollisionType => CollisionType.Turret;
     public bool IsHot => State == TurretState.Active;

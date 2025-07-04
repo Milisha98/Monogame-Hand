@@ -58,12 +58,23 @@ internal class Player : IGameObject, IMapPosition, ICollision
         move.Normalize();
         float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
         var proposedMapPosition = MapPosition + (move * speed);
-        Rectangle proposedClayton = new Rectangle((proposedMapPosition - Size48.Size).ToPoint(), Size48.Point);
+        var claytonsMapPosition = proposedMapPosition - Size48.Size;
+        Rectangle proposedClayton = Clayton.Move(claytonsMapPosition);
+
+        // I can't get fine-grained collsiion detection working here.
+        //var proposedCollisionRectangles = 
+        //    CollisionRectangles
+        //        .Select(r => r.Move(claytonsMapPosition))
+        //        .ToArray();
         var proposedCollision = new StaticCollision(proposedClayton, [], CollisionType.Player);
-        var result = Global.World.CollisionManager.CheckClaytonsCollision(proposedCollision);
-        if (result is null || Global.World.CollisionManager.IsCollisionWeCareAbout(CollisionType.Player, result.CollisionType) == false)
-        {
+        var result = Global.World.CollisionManager.CheckCollision(proposedCollision);
+        if (result is null)
+        {            
             MapPosition = proposedMapPosition;
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"Player collision detected at {proposedMapPosition} with {result.CollisionType}");
         }
     }
 
@@ -154,9 +165,9 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     private void DrawCollisionBox(SpriteBatch spriteBatch)
     {
-        Texture2D texture = spriteBatch.BlankTexture();
         if (Global.DebugShowCollisionBoxes)
         {
+            Texture2D texture = spriteBatch.BlankTexture();
             foreach (var r in CollisionRectangles)
             {
                 spriteBatch.Draw(texture, r, Color.Yellow);
@@ -166,17 +177,15 @@ internal class Player : IGameObject, IMapPosition, ICollision
 
     public void OnCollide(ICollision other)
     {
-        // Get damage from projectile if it's a projectile collision
-        int damage = 1; // Default damage
+        // Get damage from projectile if it's a projectile collision       
         if (other is Projectile projectile)
         {
+            int damage = 0; // Default damage
             damage = (int)projectile.Damage;
+            TakeDamage(damage);
+            System.Diagnostics.Debug.WriteLine($"Player took {damage} damage from {other.CollisionType}. Health: {Health}/{MaxHealth}");
+
         }
-
-        // Apply damage to player
-        TakeDamage(damage);
-
-        System.Diagnostics.Debug.WriteLine($"Player took {damage} damage from {other.CollisionType}. Health: {Health}/{MaxHealth}");
 
         // Only explode and destroy when health reaches zero
         if (!IsAlive)

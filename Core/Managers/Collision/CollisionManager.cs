@@ -100,8 +100,6 @@ public class CollisionManager : IUpdate, IDraw
             var collision = CheckCollision(hot);
             if (collision is null) return;
 
-
-
             // Handle the collision
             System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
             hot.OnCollide(collision);
@@ -123,7 +121,7 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        if (Global.DebugShowCollisionBoxes == false) return;
+        if (Global.DebugShowClaytonCollisionBoxes == false) return;
         Texture2D texture = spriteBatch.BlankTexture();
         foreach (Microsoft.Xna.Framework.Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
         {
