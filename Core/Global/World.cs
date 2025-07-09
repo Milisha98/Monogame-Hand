@@ -1,9 +1,10 @@
-﻿using Hands.Core.Managers;
+using Hands.Core.Managers;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.GameObjects;
 using Hands.GameObjects.Enemies.Turret;
+using Hands.GameObjects.Enemies.SideGun;
 using Hands.GameObjects.Projectiles;
 
 namespace Hands.Core;
@@ -18,6 +19,7 @@ internal class World
 
     // Managers
     public TurretManager        TurretManager       { get; set; } = new TurretManager();
+    public SideGunManager       SideGunManager      { get; set; } = new SideGunManager();
     public SleepManager         SleepManager        { get; set; } = new SleepManager();
     public CollisionManager     CollisionManager    { get; set; } = new CollisionManager();
     public ProjectileManager    ProjectileManager   { get; set; } = new ProjectileManager();
