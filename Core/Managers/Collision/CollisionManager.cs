@@ -123,9 +123,39 @@ public class CollisionManager : IUpdate, IDraw
     {
         if (Global.DebugShowClaytonCollisionBoxes == false) return;
         Texture2D texture = spriteBatch.BlankTexture();
+        
+        // Draw hot entities in red
         foreach (Microsoft.Xna.Framework.Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
         {
             spriteBatch.Draw(texture, clayton, Microsoft.Xna.Framework.Color.Red);
+        }
+        
+        // Draw cold entities in blue
+        foreach (Microsoft.Xna.Framework.Rectangle clayton in _cold.Keys.Select(c => c.Clayton))
+        {
+            spriteBatch.Draw(texture, clayton, Microsoft.Xna.Framework.Color.Blue);
+        }
+        
+        // Draw detailed collision rectangles if enabled
+        if (Global.DebugShowCollisionBoxes)
+        {
+            // Draw detailed collision rectangles for hot entities in yellow
+            foreach (var entity in _hot.Keys)
+            {
+                foreach (var rect in entity.CollisionRectangles)
+                {
+                    spriteBatch.Draw(texture, rect, Microsoft.Xna.Framework.Color.Yellow);
+                }
+            }
+            
+            // Draw detailed collision rectangles for cold entities in orange
+            foreach (var entity in _cold.Keys)
+            {
+                foreach (var rect in entity.CollisionRectangles)
+                {
+                    spriteBatch.Draw(texture, rect, Microsoft.Xna.Framework.Color.Orange);
+                }
+            }
         }
     }
 }

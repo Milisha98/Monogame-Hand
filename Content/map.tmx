@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="36" height="200" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="6">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="36" height="200" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="16">
  <tileset firstgid="1" source="Test Map/TileSet32.tsx"/>
  <tileset firstgid="55" source="Test Map/Turret.tsx"/>
+ <tileset firstgid="67" source="Test Map/SideGun.tsx"/>
  <layer id="1" name="Floor" width="36" height="200">
   <data encoding="csv">
 11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
@@ -1039,6 +1040,58 @@
    </properties>
   </object>
   <object id="5" type="Style1" gid="56" x="960" y="5632" width="64" height="64">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="9" name="SideGuns">
+  <object id="6" gid="67" x="1088" y="5408" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="7" gid="67" x="1088" y="5344" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="8" gid="67" x="1088" y="5280" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="9" gid="67" x="1088" y="5216" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="10" gid="67" x="1088" y="5152" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="11" gid="2147483715" x="32" y="5408" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="12" gid="2147483715" x="32" y="5344" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="13" gid="2147483715" x="32" y="5280" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="14" gid="2147483715" x="32" y="5216" width="32" height="32">
+   <properties>
+    <property name="RoF" type="float" value="2"/>
+   </properties>
+  </object>
+  <object id="15" gid="2147483715" x="32" y="5152" width="32" height="32">
    <properties>
     <property name="RoF" type="float" value="2"/>
    </properties>

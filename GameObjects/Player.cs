@@ -98,7 +98,6 @@ internal class Player : IGameObject, IMapPosition, ICollision
         spriteBatch.Draw(Texture, MapPosition - Size48.Center, Frames[0].SourceRectangle, Color.White, 0f, Size48.Center, _zoom, SpriteEffects.None, 0f);
         MainWeapon.DrawWeapon(spriteBatch);
 
-        DrawCollisionBox(spriteBatch);
     }
 
     #region Collision
@@ -107,7 +106,8 @@ internal class Player : IGameObject, IMapPosition, ICollision
         new Rectangle((MapPosition - Size48.Size).ToPoint(), Size48.Point);
 
     public Rectangle[] CollisionRectangles =>
-        [
+        new Rectangle[]
+        {
             new Rectangle(10, 17, 29, 29),
             new Rectangle(17, 4, 14, 13),
             new Rectangle(8, 20, 2, 26),
@@ -152,7 +152,7 @@ internal class Player : IGameObject, IMapPosition, ICollision
             new Rectangle(3, 24, 1, 1),
             new Rectangle(1, 26, 1, 1),
             new Rectangle(46, 26, 1, 1)
-        ];
+        }.Select(rect => new Rectangle(rect.X + (int)(MapPosition.X - Size48.Size.X), rect.Y + (int)(MapPosition.Y - Size48.Size.Y), rect.Width, rect.Height)).ToArray();
 
     public CollisionType CollisionType => CollisionType.Player;
 
@@ -160,17 +160,6 @@ internal class Player : IGameObject, IMapPosition, ICollision
     
     public bool ShouldRemoveOnCollision => !IsAlive; // Only remove when player dies
 
-    private void DrawCollisionBox(SpriteBatch spriteBatch)
-    {
-        if (Global.DebugShowCollisionBoxes)
-        {
-            Texture2D texture = spriteBatch.BlankTexture();
-            foreach (var r in CollisionRectangles)
-            {
-                spriteBatch.Draw(texture, r, Color.Yellow);
-            }            
-        }
-    }
 
     public void OnCollide(ICollision other)
     {

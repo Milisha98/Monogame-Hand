@@ -1,5 +1,6 @@
-﻿using Hands.Core.Managers.Collision;
+using Hands.Core.Managers.Collision;
 using Hands.GameObjects.Enemies.Turret;
+using Hands.GameObjects.Enemies.SideGun;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -57,6 +58,7 @@ internal static class TiledReader
         }
 
         ReadTurrets(doc);
+        ReadSideGuns(doc);
 
         Global.World.Map = worldMap;
     }
@@ -66,7 +68,7 @@ internal static class TiledReader
         var objectGroups = doc.Elements("objectgroup");
         foreach (var group in objectGroups)
         {
-            string className = group.Attribute("class").Value;
+            string className = group.Attribute("class")?.Value;
             if (className != "Turret") continue;
 
             foreach (XElement o in group.Elements("object"))
@@ -86,6 +88,34 @@ internal static class TiledReader
             }
         }
         
+    }
+
+    private static void ReadSideGuns(XElement doc)
+    {
+        var objectGroups = doc.Elements("objectgroup");
+        foreach (var group in objectGroups)
+        {
+            string groupName = group.Attribute("name").Value;
+            if (groupName != "SideGuns") continue;
+
+            foreach (XElement o in group.Elements("object"))
+            {
+                long gid = long.Parse(o.Attribute("gid").Value);
+                bool isFlipped = (gid & 0x80000000) != 0;
+                gid = gid & 0x0FFFFFFF;
+
+                SideGunInfo sg = new
+                (
+                    ID: o.Attribute("id").Value,
+                    X: int.Parse(o.Attribute("x").Value),
+                    Y: int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
+                    Orientation: isFlipped ? SideGunOrientation.Left : SideGunOrientation.Right,
+                    WakeDistance: o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
+                );
+
+                Global.World.SideGunManager.Register(sg);
+            }
+        }
     }
 
     private static IEnumerable<Tile> LoadMapData(XElement data)

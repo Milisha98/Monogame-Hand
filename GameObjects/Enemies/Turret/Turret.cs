@@ -223,7 +223,6 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         // Draw Turret Cannon
         spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[5].SourceRectangle, _animationTurretColor, _animationCannonRotation, Size64.Center, 1f, SpriteEffects.None, 0);
 
-        DrawCollisionBox(spriteBatch);
     }
 
     private void DrawDestroyed(SpriteBatch spriteBatch)
@@ -236,20 +235,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         // Draw Damage   
         spriteBatch.Draw(Sprite.Texture, MapPosition + Size64.Center, Sprite.Frames[9].SourceRectangle, _animationTurretColor, _damageRotation, Size64.Center, 1f, SpriteEffects.None, 0);
 
-        DrawCollisionBox(spriteBatch);
     }
 
-    private void DrawCollisionBox(SpriteBatch spriteBatch)
-    {
-        if (Global.DebugShowCollisionBoxes)
-        {
-            Texture2D texture = spriteBatch.BlankTexture();
-            foreach (var r in CollisionRectangles)
-            {
-                spriteBatch.Draw(texture, r, Color.Yellow);
-            }
-        }
-    }
 
     #endregion
 
@@ -330,7 +317,8 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size64.Point);
 
     public Rectangle[] CollisionRectangles =>
-        [
+        new Rectangle[]
+        {
             new Rectangle(14, 14, 36, 35),
             new Rectangle(22, 49, 21, 6),
             new Rectangle(50, 22, 6, 20),
@@ -385,7 +373,7 @@ internal class Turret : IUpdate, IDraw, IMapPosition, ISleep, ICollision
             new Rectangle(49, 49, 1, 1),
             new Rectangle(17, 51, 1, 1),
             new Rectangle(47, 51, 1, 1)
-        ];
+        }.Select(rect => new Rectangle(rect.X + (int)MapPosition.X, rect.Y + (int)MapPosition.Y, rect.Width, rect.Height)).ToArray();
 
 
     public CollisionType CollisionType => CollisionType.Turret;

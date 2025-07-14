@@ -1,4 +1,5 @@
 using Hands.Core;
+using Hands.Core.Animation;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
@@ -10,13 +11,29 @@ namespace Hands.GameObjects.Enemies.SideGun;
 
 internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 {
+    private const int GunXOffset = 15; // X offset from base position (was 16, reduced by 1)
+    private const int TopGunYOffset = -3; // Y offset for top gun
+    private const int BottomGunYOffset = 13; // Y offset for bottom gun
+    
     private readonly SideGunInfo _info;
+
+    private SinTween _topGunSinTween;
+    private SinTween _bottomGunSinTween;
+    private float _topGunXOffset = 8f; // Initialize to center position (sin=0 maps to offset=8)
+    private float _bottomGunXOffset = 8f; // Initialize to center position (sin=0 maps to offset=8)
 
     public SideGun(SideGunInfo info)
     {
         MapPosition = new Vector2(info.X, info.Y);
         Orientation = info.Orientation;
         _info = info;
+        _topGunSinTween = new SinTween(TimeSpan.FromSeconds(1)); // 1-second cycle
+        _bottomGunSinTween = new SinTween(TimeSpan.FromSeconds(1)); // 1-second cycle
+        
+        // Wire up the peak events to shoot
+        _topGunSinTween.OnPeakReached += () => Shoot(true); // true = top gun
+        _bottomGunSinTween.OnPeakReached += () => Shoot(false); // false = bottom gun
+
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
     }
 
@@ -25,7 +42,21 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public void Update(GameTime gameTime)
     {
         if (State == SideGunState.Destroyed) return;
-        // No complex logic needed for now
+        if (State == SideGunState.Idle) return;
+
+        // Only animate when active
+        if (State == SideGunState.Active)
+        {
+            // Update the sin tweens for gun animation
+            float topGunSin = _topGunSinTween.Update(gameTime);
+            float bottomGunSin = _bottomGunSinTween.Update(gameTime);
+            
+            // Convert sin values to X offsets (0 to 16 pixels)
+            // Sin values range from -1 to 1, we want 0 to 16
+            _topGunXOffset = (topGunSin + 1) * 8f; // Maps -1..1 to 0..16
+            _bottomGunXOffset = (-bottomGunSin + 1) * 8f; // Inverted bottom gun for π phase offset
+        }
+        // Note: When inactive, preserve the last position by not updating _topGunXOffset and _bottomGunXOffset
     }
 
     #endregion
@@ -46,84 +77,61 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 DrawDestroyed(spriteBatch);
                 break;
         }
+
     }
 
     private void DrawIdle(SpriteBatch spriteBatch)
     {
         var spriteEffects = Orientation == SideGunOrientation.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         
-        // Draw idle sprite (frame 0)
-        spriteBatch.Draw(
-            Sprite.Texture,
-            MapPosition,
-            Sprite.Frames[0].SourceRectangle,
-            Color.White,
-            0f,
-            Vector2.Zero,
-            1f,
-            spriteEffects,
-            0f
-        );
+        // Draw the gun sprite top
+        bool isFlipped = Orientation == SideGunOrientation.Left;
+        var xPosition = isFlipped ? MapPosition.X + GunXOffset : MapPosition.X - GunXOffset;
+        var gunPositionTop = new Vector2(xPosition, MapPosition.Y + TopGunYOffset);
+        spriteBatch.Draw(Sprite.Texture, gunPositionTop, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
 
-        DrawCollisionBox(spriteBatch);
+        // Draw the gun sprite bottom
+        var gunPositionBottom = new Vector2(xPosition, MapPosition.Y + BottomGunYOffset);
+        spriteBatch.Draw(Sprite.Texture, gunPositionBottom, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+
+        // Draw the base mount sprite
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+
     }
 
     private void DrawActive(SpriteBatch spriteBatch)
     {
         var spriteEffects = Orientation == SideGunOrientation.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         
-        // Draw active sprite (frame 1 if available, otherwise frame 0)
-        var frameIndex = Sprite.Frames.ContainsKey(1) ? 1 : 0;
+        // Calculate gun positions with animated X offsets
+        bool isFlipped = Orientation == SideGunOrientation.Left;
+        float baseXPosition = isFlipped ? MapPosition.X + GunXOffset : MapPosition.X - GunXOffset;
         
-        spriteBatch.Draw(
-            Sprite.Texture,
-            MapPosition,
-            Sprite.Frames[frameIndex].SourceRectangle,
-            Color.White,
-            0f,
-            Vector2.Zero,
-            1f,
-            spriteEffects,
-            0f
-        );
+        // Apply the calculated offsets (considering flip direction)
+        float topGunXPosition = baseXPosition + (isFlipped ? -_topGunXOffset : _topGunXOffset);
+        float bottomGunXPosition = baseXPosition + (isFlipped ? -_bottomGunXOffset : _bottomGunXOffset);
+        
+        // Draw the gun sprites with animated positions
+        var gunPositionTop = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset);
+        var gunPositionBottom = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset);
+        
+        spriteBatch.Draw(Sprite.Texture, gunPositionTop, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+        spriteBatch.Draw(Sprite.Texture, gunPositionBottom, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
 
-        DrawCollisionBox(spriteBatch);
+
+        // Draw the base mount sprite
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
     }
 
     private void DrawDestroyed(SpriteBatch spriteBatch)
     {
-        var spriteEffects = Orientation == SideGunOrientation.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-        
-        // Draw destroyed sprite (frame 2 if available, otherwise frame 0 with darker color)
-        var frameIndex = Sprite.Frames.ContainsKey(2) ? 2 : 0;
-        var destroyedColor = Sprite.Frames.ContainsKey(2) ? Color.White : Color.Gray;
-        
-        spriteBatch.Draw(
-            Sprite.Texture,
-            MapPosition,
-            Sprite.Frames[frameIndex].SourceRectangle,
-            destroyedColor,
-            0f,
-            Vector2.Zero,
-            1f,
-            spriteEffects,
-            0f
-        );
+        var spriteEffects = Orientation == SideGunOrientation.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;        
+        var destroyedColor = Color.Gray;
 
-        DrawCollisionBox(spriteBatch);
+        // Draw the base mount sprite
+        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, destroyedColor, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
     }
 
-    private void DrawCollisionBox(SpriteBatch spriteBatch)
-    {
-        if (Global.DebugShowCollisionBoxes)
-        {
-            Texture2D texture = spriteBatch.BlankTexture();
-            foreach (var r in CollisionRectangles)
-            {
-                spriteBatch.Draw(texture, r, Color.Yellow);
-            }
-        }
-    }
 
     #endregion
 
@@ -137,6 +145,11 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         if (State == SideGunState.Destroyed) return;
         State = SideGunState.Active;
         IsAsleep = false;
+        
+        // Enable the sin tweens when becoming active
+        _topGunSinTween.IsActive = true;
+        _bottomGunSinTween.IsActive = true;
+        
         Global.World.CollisionManager.Register(this);
     }
 
@@ -145,6 +158,11 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         if (State == SideGunState.Destroyed) return;
         State = SideGunState.Idle;
         IsAsleep = true;
+        
+        // Disable the sin tweens when going to sleep (preserves their state)
+        _topGunSinTween.IsActive = false;
+        _bottomGunSinTween.IsActive = false;
+        
         Global.World.CollisionManager.UnRegister(this);
     }
 
@@ -187,6 +205,12 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public Vector2 Center => MapPosition + Size32.Center;
 
     #endregion
+
+    private void Shoot(bool isTopGun)
+    {
+        string gunPosition = isTopGun ? "Top" : "Bottom";
+        System.Diagnostics.Debug.WriteLine($"SideGun {ID} {gunPosition} gun fired!");
+    }
 
     // Properties
     public string ID => _info.ID;

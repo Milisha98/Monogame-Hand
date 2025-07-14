@@ -26,6 +26,7 @@ internal class DefaultScene : IScene
         Global.World.CollisionManager.Register(Global.World.Player);
 
         Global.World.TurretManager.LoadContent(contentManager);
+        Global.World.SideGunManager.LoadContent(contentManager);
         Global.World.ProjectileManager.LoadContent(contentManager);
         Global.World.ExplosionManager.LoadContent(contentManager);
         Global.World.SmokeManager.LoadContent(contentManager);
@@ -35,6 +36,7 @@ internal class DefaultScene : IScene
     {
         Global.World.Player.Update(gameTime);
         Global.World.TurretManager.Update(gameTime);
+        Global.World.SideGunManager.Update(gameTime);
         Global.World.SleepManager.Update(gameTime);
         Global.World.ProjectileManager.Update(gameTime);
         Global.World.CollisionManager.Update(gameTime);
@@ -52,6 +54,7 @@ internal class DefaultScene : IScene
 
         _tiler.Draw(spriteBatch);
         Global.World.TurretManager.Draw(spriteBatch);
+        Global.World.SideGunManager.Draw(spriteBatch);
         Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
         Global.World.ExplosionManager.Draw(spriteBatch);
