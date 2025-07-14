@@ -47,13 +47,13 @@ public class SinTween
             progress = 1f;
         }
 
-        // Map progress to angle range: -π/2 to π/2 to -π/2 (full cycle)
-        // This creates a sine wave that goes from -1 (bottom) to 1 (top) to -1 (bottom)
-        float angle = MathF.PI * progress - MathF.PI / 2f;
+        // Map progress to angle range: 0 to 2π (full cycle)
+        // This creates a sine wave that goes from 0 to 1 to 0 to -1 to 0
+        float angle = 2f * MathF.PI * progress;
         
         // Check if we've reached the peak (π/2 or 90 degrees)
-        // Peak occurs at progress = 0.5 (middle of cycle)
-        if (!_hasFiredPeakEvent && progress >= 0.5f)
+        // Peak occurs at progress = 0.25 (quarter of cycle)
+        if (!_hasFiredPeakEvent && progress >= 0.25f)
         {
             _hasFiredPeakEvent = true;
             OnPeakReached?.Invoke();
@@ -73,7 +73,7 @@ public class SinTween
     }
 
     /// <summary>
-    /// Gets the current angle in radians (-π/2 to π/2)
+    /// Gets the current angle in radians (0 to 2π)
     /// </summary>
     public float CurrentAngle
     {
@@ -81,7 +81,7 @@ public class SinTween
         {
             float progress = (float)_elapsedTime.TotalMilliseconds / (float)_duration.TotalMilliseconds;
             if (progress >= 1f) progress = 1f;
-            return MathF.PI * progress - MathF.PI / 2f;
+            return 2f * MathF.PI * progress;
         }
     }
 

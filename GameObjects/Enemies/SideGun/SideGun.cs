@@ -27,8 +27,8 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         MapPosition = new Vector2(info.X, info.Y);
         Orientation = info.Orientation;
         _info = info;
-        _topGunSinTween = new SinTween(TimeSpan.FromSeconds(1)); // 1-second cycle
-        _bottomGunSinTween = new SinTween(TimeSpan.FromSeconds(1)); // 1-second cycle
+        _topGunSinTween = new SinTween(TimeSpan.FromSeconds(2)); // Full 2-second sin cycle
+        _bottomGunSinTween = new SinTween(TimeSpan.FromSeconds(2)); // Full 2-second sin cycle
         
         // Wire up the peak events to shoot
         _topGunSinTween.OnPeakReached += () => Shoot(true); // true = top gun
@@ -68,7 +68,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         switch (State)
         {
             case SideGunState.Idle:
-                DrawIdle(spriteBatch);
+                DrawActive(spriteBatch);
                 break;
             case SideGunState.Active:
                 DrawActive(spriteBatch);
@@ -77,25 +77,6 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 DrawDestroyed(spriteBatch);
                 break;
         }
-
-    }
-
-    private void DrawIdle(SpriteBatch spriteBatch)
-    {
-        var spriteEffects = Orientation == SideGunOrientation.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-        
-        // Draw the gun sprite top
-        bool isFlipped = Orientation == SideGunOrientation.Left;
-        var xPosition = isFlipped ? MapPosition.X + GunXOffset : MapPosition.X - GunXOffset;
-        var gunPositionTop = new Vector2(xPosition, MapPosition.Y + TopGunYOffset);
-        spriteBatch.Draw(Sprite.Texture, gunPositionTop, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
-
-        // Draw the gun sprite bottom
-        var gunPositionBottom = new Vector2(xPosition, MapPosition.Y + BottomGunYOffset);
-        spriteBatch.Draw(Sprite.Texture, gunPositionBottom, Sprite.Frames[1].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
-
-        // Draw the base mount sprite
-        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[0].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
 
     }
 
