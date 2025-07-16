@@ -4,6 +4,7 @@ using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
+using Hands.GameObjects.Projectiles;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -189,8 +190,29 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     private void Shoot(bool isTopGun)
     {
-        string gunPosition = isTopGun ? "Top" : "Bottom";
-        System.Diagnostics.Debug.WriteLine($"SideGun {ID} {gunPosition} gun fired!");
+        const int GunLength = 16;
+        const int ShootVelocity = 5;
+
+        // Calculate gun positions with animated X offsets
+        bool isFlipped = Orientation == SideGunOrientation.Left;
+        float baseXPosition = isFlipped ? MapPosition.X + GunXOffset + GunLength : MapPosition.X - GunXOffset - GunLength;
+
+        Vector2 firePosition;
+        if (isTopGun)
+        {
+            float topGunXPosition = baseXPosition + (isFlipped ? -_topGunXOffset : _topGunXOffset);
+            firePosition = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset);
+        }
+        else
+        {
+            float bottomGunXPosition = baseXPosition + (isFlipped ? -_bottomGunXOffset : _bottomGunXOffset);
+            firePosition = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset);
+        }
+
+        Vector2 fireVector = isFlipped ? new Vector2(ShootVelocity, 0) : new Vector2(-ShootVelocity, 0);
+        var projectile = new ProjectileInfo(ProjectileType.BlueBall, firePosition, fireVector, 1f, CollisionType.ProjectileEnemy);
+        Global.World.ProjectileManager.Register(projectile);
+
     }
 
     // Properties
