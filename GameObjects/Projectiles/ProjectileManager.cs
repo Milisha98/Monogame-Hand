@@ -70,17 +70,20 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
     {
         // Take advantage of the object cache to reuse projectiles
         Projectile projectile;
-        if (_objectCache.Any())
+        lock (_projectilesLock)
         {
-            projectile = _objectCache[0];
-            _objectCache.RemoveAt(0);
+            if (_objectCache.Any())
+            {
+                projectile = _objectCache[0];
+                _objectCache.RemoveAt(0);
+            }
+            else
+            {
+                projectile = new Projectile();
+            }
+            projectile.Activate(projectileInfo);
+            _projectiles.Add(projectile);
         }
-        else
-        {
-            projectile = new Projectile();
-        }
-        projectile.Activate(projectileInfo);
-        _projectiles.Add(projectile);
     }
 
     public void Unregister(Projectile projectile)

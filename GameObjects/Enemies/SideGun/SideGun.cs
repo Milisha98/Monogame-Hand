@@ -31,9 +31,9 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         _topGunSinTween = new SinTween(TimeSpan.FromSeconds(2)); // Full 2-second sin cycle
         _bottomGunSinTween = new SinTween(TimeSpan.FromSeconds(2)); // Full 2-second sin cycle
         
-        // Wire up the peak events to shoot
-        _topGunSinTween.OnPeakReached += () => Shoot(true); // true = top gun
-        _bottomGunSinTween.OnPeakReached += () => Shoot(false); // false = bottom gun
+        // Wire up the events to shoot
+        _topGunSinTween.OnTroughReached += () => Shoot(true); // true = top gun fires at trough (max extension)
+        _bottomGunSinTween.OnPeakReached += () => Shoot(false); // false = bottom gun fires at peak (max extension due to inversion)
 
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
     }
@@ -192,6 +192,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         const int GunLength = 16;
         const int ShootVelocity = 5;
+        const int GunYOffset = 4; 
 
         // Calculate gun positions with animated X offsets
         bool isFlipped = Orientation == SideGunOrientation.Left;
@@ -201,12 +202,12 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         if (isTopGun)
         {
             float topGunXPosition = baseXPosition + (isFlipped ? -_topGunXOffset : _topGunXOffset);
-            firePosition = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset);
+            firePosition = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset + GunYOffset);
         }
         else
         {
             float bottomGunXPosition = baseXPosition + (isFlipped ? -_bottomGunXOffset : _bottomGunXOffset);
-            firePosition = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset);
+            firePosition = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset + GunYOffset);
         }
 
         Vector2 fireVector = isFlipped ? new Vector2(ShootVelocity, 0) : new Vector2(-ShootVelocity, 0);

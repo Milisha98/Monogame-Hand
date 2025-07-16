@@ -8,9 +8,13 @@ public class SinTween
     private TimeSpan _elapsedTime;
     private bool _hasRestarted;
     private bool _hasFiredPeakEvent;
+    private bool _hasFiredTroughEvent;
 
     public delegate void PeakReachedHandler();
     public event PeakReachedHandler OnPeakReached;
+    
+    public delegate void TroughReachedHandler();
+    public event TroughReachedHandler OnTroughReached;
 
     public SinTween(TimeSpan duration)
     {
@@ -18,6 +22,7 @@ public class SinTween
         _elapsedTime = TimeSpan.Zero;
         _hasRestarted = false;
         _hasFiredPeakEvent = false;
+        _hasFiredTroughEvent = false;
     }
 
     /// <summary>
@@ -40,6 +45,7 @@ public class SinTween
             _elapsedTime = TimeSpan.Zero;
             _hasRestarted = true;
             _hasFiredPeakEvent = false;
+            _hasFiredTroughEvent = false;
             progress = 0f;
         }
         else if (progress >= 1f)
@@ -58,6 +64,14 @@ public class SinTween
             _hasFiredPeakEvent = true;
             OnPeakReached?.Invoke();
         }
+        
+        // Check if we've reached the trough (3π/2 or 270 degrees)
+        // Trough occurs at progress = 0.75 (three-quarters of cycle)
+        if (!_hasFiredTroughEvent && progress >= 0.75f)
+        {
+            _hasFiredTroughEvent = true;
+            OnTroughReached?.Invoke();
+        }
 
         return MathF.Sin(angle);
     }
@@ -70,6 +84,7 @@ public class SinTween
         _elapsedTime = TimeSpan.Zero;
         _hasRestarted = false;
         _hasFiredPeakEvent = false;
+        _hasFiredTroughEvent = false;
     }
 
     /// <summary>
