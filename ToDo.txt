@@ -1,9 +1,10 @@
 ﻿x Player - Only dies after 5 hits.
 x Need to add other enemies.
-	- Side-Gun: Sprite for destroyed state.
-	- Stagger side-guns
 
 . Automatically delete projectiles that go off the map
+
+. Mobile enemy
+
 
 . Need to add a scoring system.
 

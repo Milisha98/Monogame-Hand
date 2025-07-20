@@ -39,7 +39,8 @@ internal class Graphics
         GraphicsDeviceManager graphics = new(game)
         {
             PreferredBackBufferWidth = ScreenWidth,
-            PreferredBackBufferHeight = ScreenHeight
+            PreferredBackBufferHeight = ScreenHeight,
+            SynchronizeWithVerticalRetrace = true
         };
         graphics.ApplyChanges();
         Global.Graphics.GraphicsManager = graphics;
