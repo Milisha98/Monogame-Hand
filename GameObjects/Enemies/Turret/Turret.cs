@@ -5,8 +5,6 @@ using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
 using Hands.GameObjects.Projectiles;
-using Hands.Sprites;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Hands.GameObjects.Enemies.Turret;

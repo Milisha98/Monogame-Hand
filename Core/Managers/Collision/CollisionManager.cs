@@ -76,9 +76,11 @@ public class CollisionManager : IUpdate, IDraw
             (CollisionType.ProjectilePlayer,    CollisionType.Turret)           => true,
             (CollisionType.ProjectilePlayer,    CollisionType.ProjectileEnemy)  => true,
             (CollisionType.ProjectilePlayer,    CollisionType.Player)           => false,
+            (CollisionType.ProjectilePlayer,    CollisionType.Mobile)           => true,
             (CollisionType.ProjectileEnemy,     CollisionType.Wall)             => true,
             (CollisionType.ProjectileEnemy,     CollisionType.Mount)            => false,
             (CollisionType.ProjectileEnemy,     CollisionType.Turret)           => false,
+            (CollisionType.ProjectileEnemy,     CollisionType.Mobile)           => false,
             (CollisionType.ProjectileEnemy,     CollisionType.ProjectilePlayer) => true,
             (CollisionType.ProjectileEnemy,     CollisionType.Player)           => true,
             (CollisionType.Player,              CollisionType.Wall)             => true,
@@ -86,6 +88,7 @@ public class CollisionManager : IUpdate, IDraw
             (CollisionType.Player,              CollisionType.Turret)           => true,
             (CollisionType.Player,              CollisionType.ProjectilePlayer) => false,
             (CollisionType.Player,              CollisionType.ProjectileEnemy)  => true,
+            (CollisionType.Player,              CollisionType.Mobile)           => false,
             (_, _) => false
         };
     }
@@ -168,5 +171,6 @@ public enum CollisionType
     Turret,
     ProjectilePlayer,
     ProjectileEnemy,
-    Player
+    Player,
+    Mobile
 }

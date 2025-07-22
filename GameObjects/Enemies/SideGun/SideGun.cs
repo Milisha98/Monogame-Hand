@@ -4,6 +4,7 @@ using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
+using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Projectiles;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Graphics;
@@ -161,7 +162,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public CollisionType CollisionType => CollisionType.Turret; // Reuse Turret collision type for now
     public bool IsHot => State == SideGunState.Active;
-    public bool ShouldRemoveOnCollision => false; // Don't remove on collision, just destroy
+    public bool ShouldRemoveOnCollision => State == SideGunState.Destroyed; // Only remove when destroyed
 
     public void OnCollide(ICollision other)
     {

@@ -27,6 +27,8 @@ internal class DefaultScene : IScene
 
         Global.World.TurretManager.LoadContent(contentManager);
         Global.World.SideGunManager.LoadContent(contentManager);
+        Global.World.MobileManager.LoadContent(contentManager);
+
         Global.World.ProjectileManager.LoadContent(contentManager);
         Global.World.ExplosionManager.LoadContent(contentManager);
         Global.World.SmokeManager.LoadContent(contentManager);
@@ -35,8 +37,11 @@ internal class DefaultScene : IScene
     public void Update(GameTime gameTime)
     {
         Global.World.Player.Update(gameTime);
+
         Global.World.TurretManager.Update(gameTime);
         Global.World.SideGunManager.Update(gameTime);
+        Global.World.MobileManager.Update(gameTime);
+
         Global.World.SleepManager.Update(gameTime);
         Global.World.ProjectileManager.Update(gameTime);
         Global.World.CollisionManager.Update(gameTime);
@@ -53,8 +58,11 @@ internal class DefaultScene : IScene
         spriteBatch.Begin(transformMatrix: Global.World.Camera.ViewMatrix);
 
         _tiler.Draw(spriteBatch);
+
         Global.World.TurretManager.Draw(spriteBatch);
         Global.World.SideGunManager.Draw(spriteBatch);
+        Global.World.MobileManager.Draw(spriteBatch);
+
         Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
         Global.World.ExplosionManager.Draw(spriteBatch);

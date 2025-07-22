@@ -1,6 +1,7 @@
 using Hands.Core.Managers.Collision;
 using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Enemies.SideGun;
+using Hands.GameObjects.Enemies.Mobile;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -59,8 +60,33 @@ internal static class TiledReader
 
         ReadTurrets(doc);
         ReadSideGuns(doc);
+        ReadMobiles(doc);
 
         Global.World.Map = worldMap;
+    }
+
+    private static void ReadMobiles(XElement doc)
+    {
+        var objectGroups = doc.Elements("objectgroup");
+        foreach (var group in objectGroups)
+        {
+            string groupName = group.Attribute("name").Value;
+            if (groupName != "Mobiles") continue;
+
+            foreach (XElement o in group.Elements("object"))
+            {
+                MobileInfo m = new
+                (
+                    ID:             o.Attribute("id").Value,
+                    X:              int.Parse(o.Attribute("x").Value),
+                    Y:              int.Parse(o.Attribute("y").Value),
+                    RoF:            o.ReadPropertyAsFloat("RoF", 2f),
+                    WakeDistance:   o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
+                );
+
+                Global.World.MobileManager.Register(m);
+            }
+        }
     }
 
     private static void ReadTurrets(XElement doc)
