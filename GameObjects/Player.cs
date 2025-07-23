@@ -58,23 +58,17 @@ internal class Player : IGameObject, IMapPosition, ICollision
         move.Normalize();
         float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
         var proposedMapPosition = MapPosition + (move * speed);
-        var claytonsMapPosition = proposedMapPosition - Size48.Size;
-        Rectangle proposedClayton = Clayton.Move(claytonsMapPosition);
+        var proposedCenter = proposedMapPosition - Size48.Center;
 
-        // I can't get fine-grained collsiion detection working here.
-        //var proposedCollisionRectangles = 
-        //    CollisionRectangles
-        //        .Select(r => r.Move(claytonsMapPosition))
-        //        .ToArray();
-        var proposedCollision = new StaticCollision(proposedClayton, [], CollisionType.Player);
-        var result = Global.World.CollisionManager.CheckCollision(proposedCollision);
-        if (result is null)
-        {            
+        // Use the simplified CheckMoveTo method that returns CollisionType
+        var collisionType = Global.World.CollisionManager.CheckMoveTo(proposedCenter, CollisionType.Player, Size48.Point);
+        if (collisionType is null)
+        {
             MapPosition = proposedMapPosition;
         }
         else
         {
-            System.Diagnostics.Debug.WriteLine($"Player collision detected at {proposedMapPosition} with {result.CollisionType}");
+            System.Diagnostics.Debug.WriteLine($"Player collision detected at {proposedMapPosition} with {collisionType}");
         }
     }
 

@@ -39,12 +39,48 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         Vector2 direction = playerPosition - Center;
         _animationRotation = MathF.Atan2(direction.Y, direction.X);
 
+        // Move towards the player when awake
+        if (State == MobileState.Active && direction != Vector2.Zero)
+        {
+            UpdateMovement(gameTime, direction);
+        }
+
         // Update the animation frame based on the fire delay
         _animationFrame = (int)MathF.Min(3, MathF.Floor(pct * 4));
 
         if (State == MobileState.Active && _fireDelay.IsComplete)
         {
             Shoot(direction);
+        }
+    }
+
+    private void UpdateMovement(GameTime gameTime, Vector2 direction)
+    {
+        // Normalize the direction to get movement vector
+        var move = direction;
+        if (move != Vector2.Zero)
+        {
+            move.Normalize();
+        }
+        else
+        {
+            return; // No movement if no direction
+        }
+
+        // Calculate proposed new position
+        float speed = MovementSpeed * gameTime.ElapsedGameTime.Milliseconds;
+        var proposedMapPosition = MapPosition + (move * speed);
+        var proposedCenter = proposedMapPosition + Size40.Center;
+
+        // Use the simplified CheckMoveTo method that returns CollisionType
+        var collisionType = Global.World.CollisionManager.CheckMoveTo(proposedCenter, CollisionType.Mobile, Size40.Point);
+        if (collisionType is null)
+        {
+            MapPosition = proposedMapPosition;
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"Mobile collision detected at {proposedMapPosition} with {collisionType}");
         }
     }
 
