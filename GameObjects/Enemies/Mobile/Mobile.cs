@@ -173,6 +173,8 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public MobileState State { get; private set; } = MobileState.Asleep;
 
+    public float MovementSpeed => _info.MovementSpeed;
+
     public MobileManager Manager => Global.World.MobileManager;
 
 }

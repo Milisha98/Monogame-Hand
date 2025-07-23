@@ -81,7 +81,8 @@ internal static class TiledReader
                     X:              int.Parse(o.Attribute("x").Value),
                     Y:              int.Parse(o.Attribute("y").Value),
                     RoF:            o.ReadPropertyAsFloat("RoF", 2f),
-                    WakeDistance:   o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
+                    WakeDistance:   o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance),
+                    MovementSpeed:  o.ReadPropertyAsFloat("MovementSpeed", 0.2f)
                 );
 
                 Global.World.MobileManager.Register(m);
