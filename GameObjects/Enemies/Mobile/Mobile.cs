@@ -188,9 +188,50 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         Global.World.SmokeManager.Register(smokeInfo);
     }
 
-    public Rectangle Clayton => new Rectangle(MapPosition.ToPoint(), Size40.Point);
+    public Rectangle Clayton => new Rectangle((MapPosition - Size40.Center).ToPoint(), Size40.Point);
 
-    public Rectangle[] CollisionRectangles => [Clayton];
+    public Rectangle[] CollisionRectangles
+    {
+        get
+        {
+            var collisionPoints = new Vector2[]
+            {
+                new Vector2(8, 0), new Vector2(10, 0), new Vector2(12, 0),
+                new Vector2(6, 2), new Vector2(8, 2), new Vector2(10, 2), new Vector2(12, 2), new Vector2(14, 2), new Vector2(16, 2), new Vector2(18, 2), new Vector2(20, 2), new Vector2(22, 2), new Vector2(24, 2), new Vector2(26, 2), new Vector2(28, 2), new Vector2(30, 2),
+                new Vector2(4, 4), new Vector2(6, 4), new Vector2(8, 4), new Vector2(10, 4), new Vector2(12, 4), new Vector2(14, 4), new Vector2(16, 4), new Vector2(18, 4), new Vector2(20, 4), new Vector2(22, 4), new Vector2(24, 4), new Vector2(26, 4), new Vector2(28, 4), new Vector2(30, 4),
+                new Vector2(2, 6), new Vector2(4, 6), new Vector2(6, 6), new Vector2(8, 6), new Vector2(10, 6), new Vector2(12, 6), new Vector2(14, 6), new Vector2(16, 6), new Vector2(18, 6), new Vector2(20, 6), new Vector2(22, 6), new Vector2(24, 6), new Vector2(26, 6), new Vector2(28, 6), new Vector2(30, 6),
+                new Vector2(0, 8), new Vector2(2, 8), new Vector2(4, 8), new Vector2(6, 8), new Vector2(8, 8), new Vector2(10, 8), new Vector2(12, 8), new Vector2(14, 8), new Vector2(16, 8), new Vector2(18, 8), new Vector2(20, 8), new Vector2(22, 8), new Vector2(24, 8), new Vector2(26, 8), new Vector2(28, 8), new Vector2(30, 8),
+                new Vector2(0, 10), new Vector2(2, 10), new Vector2(4, 10), new Vector2(6, 10), new Vector2(8, 10), new Vector2(10, 10), new Vector2(12, 10), new Vector2(14, 10), new Vector2(16, 10), new Vector2(18, 10), new Vector2(20, 10), new Vector2(22, 10), new Vector2(24, 10), new Vector2(26, 10), new Vector2(28, 10),
+                new Vector2(0, 12), new Vector2(2, 12), new Vector2(4, 12), new Vector2(6, 12), new Vector2(8, 12), new Vector2(10, 12), new Vector2(12, 12), new Vector2(14, 12), new Vector2(16, 12), new Vector2(18, 12), new Vector2(20, 12), new Vector2(22, 12), new Vector2(24, 12), new Vector2(26, 12), new Vector2(28, 12), new Vector2(30, 12), new Vector2(32, 12), new Vector2(34, 12),
+                new Vector2(2, 14), new Vector2(4, 14), new Vector2(6, 14), new Vector2(8, 14), new Vector2(10, 14), new Vector2(12, 14), new Vector2(14, 14), new Vector2(16, 14), new Vector2(18, 14), new Vector2(20, 14), new Vector2(22, 14), new Vector2(24, 14), new Vector2(26, 14), new Vector2(28, 14), new Vector2(30, 14), new Vector2(32, 14), new Vector2(34, 14), new Vector2(36, 14),
+                new Vector2(4, 16), new Vector2(6, 16), new Vector2(8, 16), new Vector2(10, 16), new Vector2(12, 16), new Vector2(14, 16), new Vector2(16, 16), new Vector2(18, 16), new Vector2(20, 16), new Vector2(22, 16), new Vector2(24, 16), new Vector2(26, 16), new Vector2(28, 16), new Vector2(30, 16), new Vector2(32, 16), new Vector2(34, 16), new Vector2(36, 16),
+                new Vector2(4, 18), new Vector2(6, 18), new Vector2(8, 18), new Vector2(10, 18), new Vector2(12, 18), new Vector2(14, 18), new Vector2(16, 18), new Vector2(18, 18), new Vector2(20, 18), new Vector2(22, 18), new Vector2(24, 18), new Vector2(26, 18), new Vector2(28, 18), new Vector2(30, 18), new Vector2(32, 18), new Vector2(34, 18), new Vector2(36, 18), new Vector2(38, 18),
+                new Vector2(4, 20), new Vector2(6, 20), new Vector2(8, 20), new Vector2(10, 20), new Vector2(12, 20), new Vector2(14, 20), new Vector2(16, 20), new Vector2(18, 20), new Vector2(20, 20), new Vector2(22, 20), new Vector2(24, 20), new Vector2(26, 20), new Vector2(28, 20), new Vector2(30, 20), new Vector2(32, 20), new Vector2(34, 20), new Vector2(36, 20),
+                new Vector2(4, 22), new Vector2(6, 22), new Vector2(8, 22), new Vector2(10, 22), new Vector2(12, 22), new Vector2(14, 22), new Vector2(16, 22), new Vector2(18, 22), new Vector2(20, 22), new Vector2(22, 22), new Vector2(24, 22), new Vector2(26, 22), new Vector2(28, 22), new Vector2(30, 22), new Vector2(32, 22), new Vector2(34, 22), new Vector2(36, 22),
+                new Vector2(4, 24), new Vector2(6, 24), new Vector2(8, 24), new Vector2(10, 24), new Vector2(12, 24), new Vector2(14, 24), new Vector2(16, 24), new Vector2(18, 24), new Vector2(20, 24), new Vector2(22, 24), new Vector2(24, 24), new Vector2(26, 24), new Vector2(28, 24), new Vector2(30, 24), new Vector2(32, 24), new Vector2(34, 24), new Vector2(36, 24),
+                new Vector2(2, 26), new Vector2(4, 26), new Vector2(6, 26), new Vector2(8, 26), new Vector2(10, 26), new Vector2(12, 26), new Vector2(14, 26), new Vector2(16, 26), new Vector2(18, 26), new Vector2(20, 26), new Vector2(22, 26), new Vector2(24, 26), new Vector2(26, 26), new Vector2(28, 26), new Vector2(30, 26), new Vector2(32, 26), new Vector2(34, 26),
+                new Vector2(0, 28), new Vector2(2, 28), new Vector2(4, 28), new Vector2(6, 28), new Vector2(8, 28), new Vector2(10, 28), new Vector2(12, 28), new Vector2(14, 28), new Vector2(16, 28), new Vector2(18, 28), new Vector2(20, 28), new Vector2(22, 28), new Vector2(24, 28), new Vector2(26, 28), new Vector2(28, 28), new Vector2(30, 28), new Vector2(32, 28), new Vector2(34, 28),
+                new Vector2(0, 30), new Vector2(2, 30), new Vector2(4, 30), new Vector2(6, 30), new Vector2(8, 30), new Vector2(10, 30), new Vector2(12, 30), new Vector2(14, 30), new Vector2(16, 30), new Vector2(18, 30), new Vector2(20, 30), new Vector2(22, 30), new Vector2(24, 30), new Vector2(26, 30), new Vector2(28, 30), new Vector2(30, 30),
+                new Vector2(0, 32), new Vector2(2, 32), new Vector2(4, 32), new Vector2(6, 32), new Vector2(8, 32), new Vector2(10, 32), new Vector2(12, 32), new Vector2(14, 32), new Vector2(16, 32), new Vector2(18, 32), new Vector2(20, 32), new Vector2(22, 32), new Vector2(24, 32), new Vector2(26, 32), new Vector2(28, 32), new Vector2(30, 32), new Vector2(32, 32),
+                new Vector2(2, 34), new Vector2(4, 34), new Vector2(6, 34), new Vector2(8, 34), new Vector2(10, 34), new Vector2(12, 34), new Vector2(14, 34), new Vector2(16, 34), new Vector2(18, 34), new Vector2(20, 34), new Vector2(22, 34), new Vector2(24, 34), new Vector2(26, 34), new Vector2(28, 34), new Vector2(30, 34), new Vector2(32, 34),
+                new Vector2(4, 36), new Vector2(6, 36), new Vector2(8, 36), new Vector2(10, 36), new Vector2(12, 36), new Vector2(14, 36), new Vector2(16, 36), new Vector2(18, 36), new Vector2(20, 36), new Vector2(22, 36), new Vector2(24, 36), new Vector2(26, 36), new Vector2(28, 36), new Vector2(30, 36), new Vector2(32, 36),
+                new Vector2(6, 38), new Vector2(8, 38), new Vector2(10, 38), new Vector2(12, 38), new Vector2(14, 38), new Vector2(16, 38), new Vector2(18, 38), new Vector2(20, 38), new Vector2(22, 38), new Vector2(24, 38), new Vector2(26, 38), new Vector2(28, 38), new Vector2(30, 38)
+            };
+
+            // Create transformation matrix: translate to origin, rotate, then translate to world position
+            var transform = Matrix.CreateTranslation(-Size40.Center.X, -Size40.Center.Y, 0) *
+                           Matrix.CreateRotationZ(_animationRotation) *
+                           Matrix.CreateTranslation(MapPosition.X, MapPosition.Y, 0);
+
+            var rectangles = new Rectangle[collisionPoints.Length];
+            for (int i = 0; i < collisionPoints.Length; i++)
+            {
+                var transformedPoint = Vector2.Transform(collisionPoints[i], transform);
+                rectangles[i] = new Rectangle((int)transformedPoint.X, (int)transformedPoint.Y, 1, 1);
+            }
+            return rectangles;
+        }
+    }
 
     public CollisionType CollisionType => CollisionType.Mobile;
 
