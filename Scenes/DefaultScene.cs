@@ -68,7 +68,7 @@ internal class DefaultScene : IScene
         Global.World.ExplosionManager.Draw(spriteBatch);
         Global.World.SmokeManager.Draw(spriteBatch);
 
-        if (Global.DebugShowCollisionBoxes)
+        if (Global.DebugShowClaytonCollisionBoxes || Global.DebugShowCollisionBoxes)
         {
             Global.World.CollisionManager.Draw(spriteBatch);
         }

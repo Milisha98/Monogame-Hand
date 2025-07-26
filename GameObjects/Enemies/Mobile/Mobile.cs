@@ -123,8 +123,8 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     private void DrawDestroyed(SpriteBatch spriteBatch)
     {
-        var frame = Sprite.Frames[0].SourceRectangle;
-        spriteBatch.Draw(Sprite.Texture, MapPosition, frame, Color.Gray, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
+        var frame = Sprite.Frames[4].SourceRectangle;
+        spriteBatch.Draw(Sprite.Texture, MapPosition, frame, Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
     }
 
     internal MobileSprite Sprite => Manager.Sprite;

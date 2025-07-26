@@ -6,7 +6,7 @@ internal static class Global
     public const int TileDimension = 32;
     public const int CameraSpeed = 5;
 
-    public static bool DebugShowCollisionBoxes          => true;
+    public static bool DebugShowCollisionBoxes          => false;
     public static bool DebugShowClaytonCollisionBoxes   => false;
 
 

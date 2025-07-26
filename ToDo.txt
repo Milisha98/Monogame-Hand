@@ -1,11 +1,6 @@
-﻿x Player - Only dies after 5 hits.
-x Need to add other enemies.
+﻿. SideGuns need to be able to face down or up, not just left and right.
 
 . Automatically delete projectiles that go off the map
-
-. Mobile enemy
-
-
 . Need to add a scoring system.
 
 
