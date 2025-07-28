@@ -10,5 +10,7 @@ public enum SideGunState
 public enum SideGunOrientation
 {
     Left,
-    Right
+    Right,
+    Up,
+    Down
 }
