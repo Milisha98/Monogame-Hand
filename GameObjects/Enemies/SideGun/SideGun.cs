@@ -4,10 +4,7 @@ using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
 using Hands.Core.Sprites;
-using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Projectiles;
-using Hands.Sprites;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Hands.GameObjects.Enemies.SideGun;
 

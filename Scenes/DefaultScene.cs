@@ -32,6 +32,7 @@ internal class DefaultScene : IScene
         Global.World.ProjectileManager.LoadContent(contentManager);
         Global.World.ExplosionManager.LoadContent(contentManager);
         Global.World.SmokeManager.LoadContent(contentManager);
+        Global.World.WeaponSpawnManager.LoadContent(contentManager);
 
     }
     public void Update(GameTime gameTime)
@@ -47,6 +48,7 @@ internal class DefaultScene : IScene
         Global.World.CollisionManager.Update(gameTime);
         Global.World.ExplosionManager.Update(gameTime);
         Global.World.SmokeManager.Update(gameTime);
+        Global.World.WeaponSpawnManager.Update(gameTime);
 
         // Move Camera to lock on the Player
         // TODO: In the future, there might be a deadzone for the camera movement
@@ -67,6 +69,7 @@ internal class DefaultScene : IScene
         Global.World.Player.Draw(spriteBatch);
         Global.World.ExplosionManager.Draw(spriteBatch);
         Global.World.SmokeManager.Draw(spriteBatch);
+        Global.World.WeaponSpawnManager.Draw(spriteBatch);
 
         if (Global.DebugShowClaytonCollisionBoxes || Global.DebugShowCollisionBoxes)
         {

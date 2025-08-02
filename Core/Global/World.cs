@@ -2,6 +2,7 @@ using Hands.Core.Managers;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
+using Hands.Core.Managers.WeaponSpawn;
 using Hands.GameObjects;
 using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Enemies.SideGun;
@@ -27,4 +28,5 @@ internal class World
     public ProjectileManager    ProjectileManager   { get; set; } = new ProjectileManager();
     public ExplosionManager     ExplosionManager    { get; set; } = new ExplosionManager();
     public SmokeManager         SmokeManager        { get; set; } = new SmokeManager();
+    public WeaponSpawnManager   WeaponSpawnManager  { get; set; } = new WeaponSpawnManager();
 }

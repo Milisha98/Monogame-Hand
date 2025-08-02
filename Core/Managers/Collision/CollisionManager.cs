@@ -159,6 +159,7 @@ public class CollisionManager : IUpdate, IDraw
             (CollisionType.Player,              CollisionType.ProjectilePlayer) => false,
             (CollisionType.Player,              CollisionType.ProjectileEnemy)  => true,
             (CollisionType.Player,              CollisionType.Mobile)           => false,
+            (CollisionType.Player,              CollisionType.WeaponSpawn)      => true,
             (CollisionType.Mobile,              CollisionType.Wall)             => true,
             (CollisionType.Mobile,              CollisionType.Mount)            => true,
             (CollisionType.Mobile,              CollisionType.Player)           => false,
@@ -248,5 +249,6 @@ public enum CollisionType
     ProjectilePlayer,
     ProjectileEnemy,
     Player,
-    Mobile
+    Mobile,
+    WeaponSpawn
 }

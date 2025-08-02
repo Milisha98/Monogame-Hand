@@ -1342,6 +1342,7 @@
   <object id="25" x="512" y="4608">
    <properties>
     <property name="MovementSpeed" type="float" value="0.2"/>
+    <property name="OnDeathSpawn" value="W"/>
     <property name="RoF" type="float" value="1"/>
    </properties>
    <point/>

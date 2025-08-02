@@ -1,4 +1,4 @@
-﻿using Hands.Core;
+using Hands.Core;
 using Hands.Core.Animation;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
@@ -104,13 +104,10 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     #region IDraw
     public void Draw(SpriteBatch spriteBatch)
     {
+        // Only draw if mobile is active or asleep - destroyed mobiles disappear completely
         if (State.In(MobileState.Asleep, MobileState.Active))
         {
             DrawActive(spriteBatch);
-        }
-        else if (State == MobileState.Destroyed)
-        {
-            DrawDestroyed(spriteBatch);
         }
     }
 
@@ -119,12 +116,6 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         var frame = Sprite.Frames[_animationFrame].SourceRectangle;
         spriteBatch.Draw(Sprite.Texture, MapPosition, frame, Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
         // TODO: Draw Shadow?
-    }
-
-    private void DrawDestroyed(SpriteBatch spriteBatch)
-    {
-        var frame = Sprite.Frames[4].SourceRectangle;
-        spriteBatch.Draw(Sprite.Texture, MapPosition, frame, Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
     }
 
     internal MobileSprite Sprite => Manager.Sprite;
@@ -169,9 +160,11 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         State = MobileState.Destroyed;
 
         Global.World.CollisionManager.UnRegister(this);
+        Manager.Unregister(this); // Remove from MobileManager
 
         Explode();
         Smoke();
+        HandleOnDeathSpawn();
     }
 
     private void Explode()
@@ -186,6 +179,16 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         var smokeParticleCount = (int)(40 * 1.5f); // Scale particles with radius
         var smokeInfo = new SmokeAreaInfo(Center, smokeRadius, smokeParticleCount, 0.1f);
         Global.World.SmokeManager.Register(smokeInfo);
+    }
+
+    private void HandleOnDeathSpawn()
+    {
+        if (!string.IsNullOrEmpty(_info.OnDeathSpawn))
+        {
+            System.Diagnostics.Debug.WriteLine($"Mobile death spawn triggered: {_info.OnDeathSpawn} at {Center}");
+            // TODO: Implement actual spawning logic based on the OnDeathSpawn value
+            // For now, this is a placeholder that logs the spawn event
+        }
     }
 
     public Rectangle Clayton => new Rectangle((MapPosition - Size40.Center).ToPoint(), Size40.Point);

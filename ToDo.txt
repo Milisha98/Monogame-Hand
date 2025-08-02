@@ -1,8 +1,3 @@
-﻿. SideGuns need to be able to face down or up, not just left and right.
-
-. Create graphic for laser weapons.
-. Add to Tiled. It will spawn on destruction of a Turret.
-
 . Automatically delete projectiles that go off the map
 . Need to add a scoring system.
 
