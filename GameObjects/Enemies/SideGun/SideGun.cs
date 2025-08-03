@@ -11,14 +11,15 @@ namespace Hands.GameObjects.Enemies.SideGun;
 internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 {
     // Horizontal orientation constants
-    private const int GunXOffset = 15; // X offset from base position for horizontal orientations
+    private const int HorizontalGunXOffset = 15; // X offset from base position for horizontal orientations
     private const int TopGunYOffset = -3; // Y offset for top gun (horizontal orientations)
     private const int BottomGunYOffset = 13; // Y offset for bottom gun (horizontal orientations)
     
     // Vertical orientation constants
-    private const int GunYOffset = 15; // Y offset from base position for vertical orientations
-    private const int LeftGunXOffset = -3; // X offset for left gun (vertical orientations)
-    private const int RightGunXOffset = 13; // X offset for right gun (vertical orientations)
+    private const int VerticalGunXOffset = 4; // X offset from base position for vertical orientations
+    private const int VerticalGunYOffset = -8; // Y offset for vertical gun (both orientations)
+    private const int LeftGunXOffset = -9; // X offset for left gun (vertical orientations)
+    private const int RightGunXOffset = 6; // X offset for right gun (vertical orientations)
     
     private readonly SideGunInfo _info;
 
@@ -58,8 +59,8 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
             
             // Convert sin values to animation offsets (0 to 16 pixels)
             // Sin values range from -1 to 1, we want 0 to 16
-            _gun1AnimationOffset = (gun1Sin + 1) * 8f; // Maps -1..1 to 0..16
-            _gun2AnimationOffset = (-gun2Sin + 1) * 8f; // Inverted gun2 for π phase offset
+            _gun1AnimationOffset = (gun1Sin + 1.5f) * 8f; // Maps -1..1 to 0..16
+            _gun2AnimationOffset = (-gun2Sin + 1.5f) * 8f; // Inverted gun2 for π phase offset
         }
         // Note: When inactive, preserve the last position by not updating animation offsets
     }
@@ -89,8 +90,8 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         var spriteEffects = SpriteEffects.None;
         int baseFrame, gunFrame;
-        float baseXPosition, topGunXPosition, bottomGunXPosition;
-        Vector2 gunPositionTop, gunPositionBottom;
+        float baseXPosition, gun1XPosition, gun2XPosition;
+        Vector2 gun1Position, gun2Position, basePosition;
 
         switch (Orientation)
         {
@@ -98,50 +99,54 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 spriteEffects = SpriteEffects.FlipHorizontally;
                 baseFrame = 0;
                 gunFrame = 1;
-                baseXPosition = MapPosition.X + GunXOffset;
-                topGunXPosition = baseXPosition - _gun1AnimationOffset;
-                bottomGunXPosition = baseXPosition - _gun2AnimationOffset;
-                gunPositionTop = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset);
-                gunPositionBottom = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset);
+                baseXPosition = MapPosition.X + HorizontalGunXOffset;
+                gun1XPosition = baseXPosition - _gun1AnimationOffset;
+                gun2XPosition = baseXPosition - _gun2AnimationOffset;
+                gun1Position = new Vector2(gun1XPosition, MapPosition.Y + TopGunYOffset);
+                gun2Position = new Vector2(gun2XPosition, MapPosition.Y + BottomGunYOffset);
+                basePosition = MapPosition;
                 break;
             case SideGunOrientation.Right:
                 baseFrame = 0;
                 gunFrame = 1;
-                baseXPosition = MapPosition.X - GunXOffset;
-                topGunXPosition = baseXPosition + _gun1AnimationOffset;
-                bottomGunXPosition = baseXPosition + _gun2AnimationOffset;
-                gunPositionTop = new Vector2(topGunXPosition, MapPosition.Y + TopGunYOffset);
-                gunPositionBottom = new Vector2(bottomGunXPosition, MapPosition.Y + BottomGunYOffset);
+                baseXPosition = MapPosition.X - HorizontalGunXOffset;
+                gun1XPosition = baseXPosition + _gun1AnimationOffset;
+                gun2XPosition = baseXPosition + _gun2AnimationOffset;
+                gun1Position = new Vector2(gun1XPosition, MapPosition.Y + TopGunYOffset);
+                gun2Position = new Vector2(gun2XPosition, MapPosition.Y + BottomGunYOffset);
+                basePosition = MapPosition;
                 break;
             case SideGunOrientation.Up:
                 baseFrame = 2;
                 gunFrame = 3;
-                baseXPosition = MapPosition.X;
-                topGunXPosition = baseXPosition + RightGunXOffset;
-                bottomGunXPosition = baseXPosition + LeftGunXOffset;
-                gunPositionTop = new Vector2(topGunXPosition, MapPosition.Y - _gun1AnimationOffset);
-                gunPositionBottom = new Vector2(bottomGunXPosition, MapPosition.Y - _gun2AnimationOffset);
+                baseXPosition = MapPosition.X - VerticalGunXOffset;
+                gun1XPosition = baseXPosition + RightGunXOffset;
+                gun2XPosition = baseXPosition + LeftGunXOffset;
+                gun1Position = new Vector2(gun1XPosition, MapPosition.Y + VerticalGunYOffset - _gun1AnimationOffset);
+                gun2Position = new Vector2(gun2XPosition, MapPosition.Y + VerticalGunYOffset - _gun2AnimationOffset);
+                basePosition = MapPosition; // Keep base at map position
                 break;
             case SideGunOrientation.Down:
                 spriteEffects = SpriteEffects.FlipVertically;
                 baseFrame = 2;
                 gunFrame = 3;
-                baseXPosition = MapPosition.X;
-                topGunXPosition = baseXPosition + RightGunXOffset;
-                bottomGunXPosition = baseXPosition + LeftGunXOffset;
-                gunPositionTop = new Vector2(topGunXPosition, MapPosition.Y + _gun1AnimationOffset);
-                gunPositionBottom = new Vector2(bottomGunXPosition, MapPosition.Y + _gun2AnimationOffset);
+                baseXPosition = MapPosition.X - VerticalGunXOffset;
+                gun1XPosition = baseXPosition + RightGunXOffset;
+                gun2XPosition = baseXPosition + LeftGunXOffset;
+                gun1Position = new Vector2(gun1XPosition, MapPosition.Y + VerticalGunYOffset + _gun1AnimationOffset);
+                gun2Position = new Vector2(gun2XPosition, MapPosition.Y + VerticalGunYOffset + _gun2AnimationOffset);
+                basePosition = MapPosition; // Keep base at map position
                 break;
             default:
                 return;
         }
 
         // Draw the gun sprites
-        spriteBatch.Draw(Sprite.Texture, gunPositionTop, Sprite.Frames[gunFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
-        spriteBatch.Draw(Sprite.Texture, gunPositionBottom, Sprite.Frames[gunFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+        spriteBatch.Draw(Sprite.Texture, gun1Position, Sprite.Frames[gunFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+        spriteBatch.Draw(Sprite.Texture, gun2Position, Sprite.Frames[gunFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
 
         // Draw the base mount sprite
-        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[baseFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+        spriteBatch.Draw(Sprite.Texture, basePosition, Sprite.Frames[baseFrame].SourceRectangle, Color.White, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
     }
 
     private void DrawDestroyed(SpriteBatch spriteBatch)
@@ -149,30 +154,36 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         var destroyedColor = Color.Gray;
         var spriteEffects = SpriteEffects.None;
         int baseFrame;
+        Vector2 basePosition;
 
         switch (Orientation)
         {
             case SideGunOrientation.Left:
                 spriteEffects = SpriteEffects.FlipHorizontally;
                 baseFrame = 0;
+                basePosition = MapPosition;
                 break;
             case SideGunOrientation.Right:
                 baseFrame = 0;
+                basePosition = MapPosition;
                 break;
             case SideGunOrientation.Up:
                 baseFrame = 2;
+                basePosition = MapPosition; // Keep base at map position
                 break;
             case SideGunOrientation.Down:
                 spriteEffects = SpriteEffects.FlipVertically;
                 baseFrame = 2;
+                basePosition = MapPosition; // Keep base at map position
                 break;
             default:
                 baseFrame = 0;
+                basePosition = MapPosition;
                 break;
         }
 
         // Draw the base mount sprite
-        spriteBatch.Draw(Sprite.Texture, MapPosition, Sprite.Frames[baseFrame].SourceRectangle, destroyedColor, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
+        spriteBatch.Draw(Sprite.Texture, basePosition, Sprite.Frames[baseFrame].SourceRectangle, destroyedColor, 0f, Vector2.Zero, 1f, spriteEffects, 0f);
     }
 
 
@@ -262,7 +273,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
         {
             case SideGunOrientation.Left:
                 {
-                    float baseXPosition = MapPosition.X + GunXOffset + GunLength;
+                    float baseXPosition = MapPosition.X + HorizontalGunXOffset + GunLength;
                     if (isGun1) // Top gun
                     {
                         float gunXPosition = baseXPosition - _gun1AnimationOffset;
@@ -278,7 +289,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 break;
             case SideGunOrientation.Right:
                 {
-                    float baseXPosition = MapPosition.X - GunXOffset - GunLength;
+                    float baseXPosition = MapPosition.X - HorizontalGunXOffset - GunLength;
                     if (isGun1) // Top gun
                     {
                         float gunXPosition = baseXPosition + _gun1AnimationOffset;
@@ -294,7 +305,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 break;
             case SideGunOrientation.Up:
                 {
-                    float baseYPosition = MapPosition.Y - GunYOffset - GunLength;
+                    float baseYPosition = MapPosition.Y - VerticalGunXOffset - GunLength;
                     if (isGun1) // Right gun
                     {
                         float gunYPosition = baseYPosition - _gun1AnimationOffset;
@@ -310,7 +321,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
                 break;
             case SideGunOrientation.Down:
                 {
-                    float baseYPosition = MapPosition.Y + GunYOffset + GunLength;
+                    float baseYPosition = MapPosition.Y + VerticalGunXOffset + GunLength;
                     if (isGun1) // Right gun
                     {
                         float gunYPosition = baseYPosition + _gun1AnimationOffset;

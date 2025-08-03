@@ -3,6 +3,7 @@ using Hands.Core.Animation;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Managers.Explosion;
 using Hands.Core.Managers.Smoke;
+using Hands.Core.Managers.WeaponSpawn;
 using Hands.Core.Sprites;
 using Hands.GameObjects.Projectiles;
 
@@ -91,7 +92,7 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     public float ShootVelocity => 5f;
     public void Shoot(Vector2 direction)
     {
-        var firePosition = Center + Vector2.Normalize(direction) * 20f;
+        var firePosition = MapPosition + Vector2.Normalize(direction) * 20f;
         var fireVector = direction;
         if (fireVector != Vector2.Zero) fireVector.Normalize();
         fireVector *= ShootVelocity;
@@ -114,8 +115,15 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     private void DrawActive(SpriteBatch spriteBatch)
     {
         var frame = Sprite.Frames[_animationFrame].SourceRectangle;
-        spriteBatch.Draw(Sprite.Texture, MapPosition, frame, Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
-        // TODO: Draw Shadow?
+        var shadow = Sprite.Frames[4].SourceRectangle;
+        var shadowOffset = new Vector2(4, 4);
+
+        // Draw the shadow first
+        spriteBatch.Draw(Sprite.Texture, MapPosition + shadowOffset, shadow, Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
+
+        // Draw the mobile sprite
+        spriteBatch.Draw(Sprite.Texture, MapPosition, frame,  Color.White, _animationRotation, Size40.Center, 1f, SpriteEffects.None, 0);
+
     }
 
     internal MobileSprite Sprite => Manager.Sprite;
@@ -139,13 +147,7 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public void OnSleep()
     {
-        if (State == MobileState.Destroyed) return;
-        State = MobileState.Asleep;
-
-        _fireDelay.Reset();
-        _fireDelay.IsActive = false;
-
-        Global.World.CollisionManager.UnRegister(this);
+        // Mobiles can no longer go to sleep.
     }
 
     #endregion
@@ -185,9 +187,8 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         if (!string.IsNullOrEmpty(_info.OnDeathSpawn))
         {
-            System.Diagnostics.Debug.WriteLine($"Mobile death spawn triggered: {_info.OnDeathSpawn} at {Center}");
-            // TODO: Implement actual spawning logic based on the OnDeathSpawn value
-            // For now, this is a placeholder that logs the spawn event
+            var weaponSpawnInfo = new WeaponSpawnInfo(Center, _info.OnDeathSpawn);
+            Global.World.WeaponSpawnManager.Register(weaponSpawnInfo);
         }
     }
 

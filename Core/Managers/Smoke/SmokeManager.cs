@@ -39,14 +39,18 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
                 // Recycle an existing smoke particle
                 smoke = _objectCache[0];
                 _objectCache.RemoveAt(0);
+                smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
+                _particles.Add(smoke);
+
             }
             else
             {
                 // Create a new smoke particle if the cache is empty
-                smoke = new Smoke();
+                smoke = new Smoke(); 
+                smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
+                _particles.Add(smoke);
+
             }
-            smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
-            _particles.Add(smoke);
 
         }
     }

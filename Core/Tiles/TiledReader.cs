@@ -129,15 +129,28 @@ internal static class TiledReader
             foreach (XElement o in group.Elements("object"))
             {
                 long gid = long.Parse(o.Attribute("gid").Value);
-                bool isFlipped = (gid & 0x80000000) != 0;
+                bool isHorizontallyFlipped = (gid & 0x80000000) != 0;
+                bool isVerticallyFlipped = (gid & 0x40000000) != 0;
                 gid = gid & 0x0FFFFFFF;
+
+                SideGunOrientation orientation;
+                if (isVerticallyFlipped)
+                {
+                    // Vertical orientations
+                    orientation = isHorizontallyFlipped ? SideGunOrientation.Up : SideGunOrientation.Down;
+                }
+                else
+                {
+                    // Horizontal orientations
+                    orientation = isHorizontallyFlipped ? SideGunOrientation.Left : SideGunOrientation.Right;
+                }
 
                 SideGunInfo sg = new
                 (
                     ID: o.Attribute("id").Value,
                     X: int.Parse(o.Attribute("x").Value),
                     Y: int.Parse(o.Attribute("y").Value) - int.Parse(o.Attribute("height").Value),
-                    Orientation: isFlipped ? SideGunOrientation.Left : SideGunOrientation.Right,
+                    Orientation: orientation,
                     WakeDistance: o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
                 );
 

@@ -23,6 +23,9 @@ public class WeaponSpawnManager : ILoadContent, IUpdate, IDraw
 
     public void Register(WeaponSpawnInfo info)
     {
+        // Invalid weapon type, cannot register
+        if (GetFrameForWeaponType(info.WeaponType) < 0) return;
+
         WeaponSpawn weaponSpawn;
         if (_objectCache.Any())
         {
@@ -86,7 +89,7 @@ public class WeaponSpawnManager : ILoadContent, IUpdate, IDraw
         {
             "W" => 0,  // Frame 0 is the letter "W"
             // Add more weapon types here in the future:
-            _ => 0      // Default to frame 0 if unknown type
+            _ => -1      // Default to frame 0 if unknown type
         };
     }
 
