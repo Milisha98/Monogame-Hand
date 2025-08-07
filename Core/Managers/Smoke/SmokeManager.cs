@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 namespace Hands.Core.Managers.Smoke;
 public class SmokeManager : ILoadContent, IUpdate, IDraw
 {
-    private List<Smoke> _objectCache = [];
-    private List<Smoke> _particles   = [];
+    private readonly List<Smoke> _objectCache;
+    private readonly List<Smoke> _particles;
+    private readonly object _lockObject = new();
 
     public SmokeManager()
     {
         const int initialCapacity = 200;        // Initial capacity for the smoke particles
-        _particles      = new List<Smoke>(initialCapacity);
-        _objectCache    = new List<Smoke>(initialCapacity);
+        _particles = new List<Smoke>(initialCapacity);
+        _objectCache = new List<Smoke>(initialCapacity);
         for (int i = 0; i < initialCapacity; i++)
         {
             _objectCache.Add(new Smoke());
@@ -23,35 +24,35 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public void Register(SmokeAreaInfo info)
     {
-        // Move the smoke particles from the cache to the active list
-        for (int i = 0; i < info.Count && _objectCache.Count > 0; i++)
+        lock (_lockObject)
         {
-            // Generate a random position within the given radius from center
-            float angle = Random.Shared.NextSingle() * MathF.Tau; // Random angle
-            float distance = Random.Shared.NextSingle() * info.Radius; // Random distance within radius
-            float x = info.Center.X + MathF.Cos(angle) * distance;
-            float y = info.Center.Y + MathF.Sin(angle) * distance;
-            var position = new Vector2(x, y);
-
-            Smoke smoke;
-            if (_objectCache.Any())
+            // Move the smoke particles from the cache to the active list
+            for (int i = 0; i < info.Count && _objectCache.Count > 0; i++)
             {
-                // Recycle an existing smoke particle
-                smoke = _objectCache[0];
-                _objectCache.RemoveAt(0);
-                smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
-                _particles.Add(smoke);
+                // Generate a random position within the given radius from center
+                float angle = Random.Shared.NextSingle() * MathF.Tau; // Random angle
+                float distance = Random.Shared.NextSingle() * info.Radius; // Random distance within radius
+                float x = info.Center.X + MathF.Cos(angle) * distance;
+                float y = info.Center.Y + MathF.Sin(angle) * distance;
+                var position = new Vector2(x, y);
 
+                Smoke smoke;
+                if (_objectCache.Count > 0)
+                {
+                    // Recycle an existing smoke particle
+                    smoke = _objectCache[0];
+                    _objectCache.RemoveAt(0);
+                    smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
+                    _particles.Add(smoke);
+                }
+                else
+                {
+                    // Create a new smoke particle if the cache is empty
+                    smoke = new Smoke(); 
+                    smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
+                    _particles.Add(smoke);
+                }
             }
-            else
-            {
-                // Create a new smoke particle if the cache is empty
-                smoke = new Smoke(); 
-                smoke.Activate(position, TimeSpan.FromSeconds(info.StartDelay));
-                _particles.Add(smoke);
-
-            }
-
         }
     }
 
@@ -62,18 +63,38 @@ public class SmokeManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        Parallel.ForEach(_particles, smoke =>
+        // Create a safe copy for parallel processing
+        List<Smoke> particlesCopy;
+        lock (_lockObject)
+        {
+            particlesCopy = new List<Smoke>(_particles);
+        }
+        
+        // Update all particles in parallel
+        Parallel.ForEach(particlesCopy, smoke =>
         {
             smoke.Update(gameTime);
         });
+        
         // Move completed particles back to the cache
-        _objectCache.AddRange(_particles.FindAll(s => s.IsComplete));
-        _particles.RemoveAll(s => s.IsComplete);
+        lock (_lockObject)
+        {
+            var completedParticles = _particles.FindAll(s => s.IsComplete);
+            _objectCache.AddRange(completedParticles);
+            _particles.RemoveAll(s => s.IsComplete);
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        Parallel.ForEach(_particles, smoke =>
+        // Create a safe copy for parallel processing
+        List<Smoke> particlesCopy;
+        lock (_lockObject)
+        {
+            particlesCopy = new List<Smoke>(_particles);
+        }
+        
+        Parallel.ForEach(particlesCopy, smoke =>
         {
             smoke.Draw(spriteBatch);
         });

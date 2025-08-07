@@ -124,6 +124,7 @@ public class CollisionManager : IUpdate, IDraw
             (CollisionType.ProjectilePlayer,    CollisionType.ProjectileEnemy)  => true,
             (CollisionType.ProjectilePlayer,    CollisionType.Player)           => false,
             (CollisionType.ProjectilePlayer,    CollisionType.Mobile)           => true,
+            (CollisionType.ProjectilePlayer,    CollisionType.JetFighter)       => true,
             (CollisionType.ProjectileEnemy,     CollisionType.Wall)             => true,
             (CollisionType.ProjectileEnemy,     CollisionType.Mount)            => false,
             (CollisionType.ProjectileEnemy,     CollisionType.Turret)           => false,
@@ -136,6 +137,7 @@ public class CollisionManager : IUpdate, IDraw
             (CollisionType.Player,              CollisionType.ProjectilePlayer) => false,
             (CollisionType.Player,              CollisionType.ProjectileEnemy)  => true,
             (CollisionType.Player,              CollisionType.Mobile)           => true,
+            (CollisionType.Player,              CollisionType.JetFighter)       => true,
             (CollisionType.Player,              CollisionType.WeaponSpawn)      => true,
             (CollisionType.Mobile,              CollisionType.Wall)             => true,
             (CollisionType.Mobile,              CollisionType.Mount)            => true,
@@ -188,14 +190,26 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        var markForDestroy = new List<ICollision>();
+        var collisionPairs = new ConcurrentBag<(ICollision hot, ICollision collision)>();
 
-
-        Parallel.ForEach(_hot.Keys, hot =>
+        // Step 1: Detect all collisions in parallel (read-only operations)
+        var hotObjects = _hot.Keys.ToList(); // Create snapshot to avoid collection modification
+        Parallel.ForEach(hotObjects, hot =>
         {
             var collision = CheckCollision(hot);
-            if (collision is null) return;
+            if (collision != null)
+            {
+                collisionPairs.Add((hot, collision));
+            }
+        });
 
+        // Step 2: Process collisions sequentially to avoid race conditions
+        var markForDestroy = new List<ICollision>();
+        foreach (var (hot, collision) in collisionPairs)
+        {
+            // Double-check that objects are still valid (haven't been removed by another collision)
+            if (!_hot.ContainsKey(hot)) continue;
+            
             // Handle the collision
             System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
             hot.OnCollide(collision);
@@ -206,9 +220,9 @@ public class CollisionManager : IUpdate, IDraw
                 markForDestroy.Add(hot);
             if (_hot.ContainsKey(collision) && collision.ShouldRemoveOnCollision)
                 markForDestroy.Add(collision);
-        });
+        }
 
-        // Remove all marked collisions after the loop
+        // Step 3: Remove all marked collisions after processing
         foreach (var item in markForDestroy.Distinct())
         {
             _hot.TryRemove(item, out _);
@@ -266,5 +280,6 @@ public enum CollisionType
     ProjectileEnemy,
     Player,
     Mobile,
+    JetFighter,
     WeaponSpawn
 }

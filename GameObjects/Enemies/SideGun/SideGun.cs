@@ -18,7 +18,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     // Vertical orientation constants
     private const int VerticalGunXOffset = 4; // X offset from base position for vertical orientations
     private const int VerticalGunYOffset = -8; // Y offset for vertical gun (both orientations)
-    private const int LeftGunXOffset = -9; // X offset for left gun (vertical orientations)
+    private const int LeftGunXOffset = -8  ; // X offset for left gun (vertical orientations)
     private const int RightGunXOffset = 6; // X offset for right gun (vertical orientations)
     
     private readonly SideGunInfo _info;
@@ -237,7 +237,7 @@ internal class SideGun : IUpdate, IDraw, IMapPosition, ISleep, ICollision
 
     public void OnCollide(ICollision other)
     {
-        if (State != SideGunState.Active) return;
+        if (State == SideGunState.Destroyed) return;
 
         var explosionInfo = new ExplosionInfo(Center, 32);
         Global.World.ExplosionManager.Register(explosionInfo);

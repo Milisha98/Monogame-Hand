@@ -1,14 +1,16 @@
-﻿using Hands.Core;
+using Hands.Core;
 using Hands.Core.Sprites;
 using Hands.Sprites;
 using Microsoft.Xna.Framework.Content;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Enemies.Mobile;
+
 internal class MobileManager : ILoadContent, IUpdate, IDraw
 {
-    private List<Mobile> Mobiles { get; set; } = new();
+    private ConcurrentDictionary<Mobile, byte> Mobiles { get; set; } = new();
 
     public void LoadContent(ContentManager contentManager)
     {
@@ -18,19 +20,19 @@ internal class MobileManager : ILoadContent, IUpdate, IDraw
     public void Register(MobileInfo info)
     {
         var mobile = new Mobile(info);
-        Mobiles.Add(mobile);
+        Mobiles.TryAdd(mobile, 0);
         Global.World.SleepManager.Register(mobile);
     }
 
     public void Unregister(Mobile mobile)
     {
-        Mobiles.Remove(mobile);
+        Mobiles.TryRemove(mobile, out _);
         Global.World.SleepManager.Unregister(mobile);
     }
 
     public void Update(GameTime gameTime)
     {
-        Parallel.ForEach(Mobiles, mobile =>
+        Parallel.ForEach(Mobiles.Keys, mobile =>
         {
             mobile.Update(gameTime);
         });
@@ -38,7 +40,7 @@ internal class MobileManager : ILoadContent, IUpdate, IDraw
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        Parallel.ForEach(Mobiles, mobile =>
+        Parallel.ForEach(Mobiles.Keys, mobile =>
         {
             mobile.Draw(spriteBatch);
         });

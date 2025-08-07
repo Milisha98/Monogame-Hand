@@ -21,7 +21,7 @@ internal class SleepManager : IUpdate
 
     public void Update(GameTime gameTime)
     {
-        Parallel.ForEach(_register, target =>
+        foreach (var target in _register)
         {
             float distanceToPlayer = Math.Abs(target.MapPosition.Y - Global.World.Player.MapPosition.Y);
             //System.Diagnostics.Debug.WriteLine($"Distance to Player: {distanceToPlayer} - Target: {target.GetType().Name}");
@@ -35,7 +35,7 @@ internal class SleepManager : IUpdate
                 if (target.IsAsleep)
                     target.OnSisterAwake();
             }
-        });
+        }
     }
 
 }

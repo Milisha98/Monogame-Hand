@@ -158,6 +158,9 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         if (State == MobileState.Destroyed) return;
 
+        // Add debugging to see exactly what's destroying mobiles
+        System.Diagnostics.Debug.WriteLine($"[MOBILE DESTRUCTION] Mobile at {Center} destroyed by {other.CollisionType}");
+
         _fireDelay.IsActive = false;
         State = MobileState.Destroyed;
 

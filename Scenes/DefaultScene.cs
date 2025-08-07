@@ -28,6 +28,7 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.LoadContent(contentManager);
         Global.World.SideGunManager.LoadContent(contentManager);
         Global.World.MobileManager.LoadContent(contentManager);
+        Global.World.JetFighterManager.LoadContent(contentManager);
 
         Global.World.ProjectileManager.LoadContent(contentManager);
         Global.World.ExplosionManager.LoadContent(contentManager);
@@ -42,6 +43,7 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.Update(gameTime);
         Global.World.SideGunManager.Update(gameTime);
         Global.World.MobileManager.Update(gameTime);
+        Global.World.JetFighterManager.Update(gameTime);
 
         Global.World.SleepManager.Update(gameTime);
         Global.World.ProjectileManager.Update(gameTime);
@@ -64,6 +66,7 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.Draw(spriteBatch);
         Global.World.SideGunManager.Draw(spriteBatch);
         Global.World.MobileManager.Draw(spriteBatch);
+        Global.World.JetFighterManager.Draw(spriteBatch);
 
         Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);

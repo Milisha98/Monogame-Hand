@@ -8,6 +8,7 @@ using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Enemies.SideGun;
 using Hands.GameObjects.Projectiles;
 using Hands.GameObjects.Enemies.Mobile;
+using Hands.GameObjects.Enemies.JetFighter;
 
 namespace Hands.Core;
 internal class World
@@ -23,6 +24,7 @@ internal class World
     public TurretManager        TurretManager       { get; set; } = new TurretManager();
     public SideGunManager       SideGunManager      { get; set; } = new SideGunManager();
     public MobileManager        MobileManager       { get; set; } = new MobileManager();
+    public JetFighterManager    JetFighterManager   { get; set; } = new JetFighterManager();
     public SleepManager         SleepManager        { get; set; } = new SleepManager();
     public CollisionManager     CollisionManager    { get; set; } = new CollisionManager();
     public ProjectileManager    ProjectileManager   { get; set; } = new ProjectileManager();

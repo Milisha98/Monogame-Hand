@@ -2,6 +2,7 @@ using Hands.Core.Managers.Collision;
 using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Enemies.SideGun;
 using Hands.GameObjects.Enemies.Mobile;
+using Hands.GameObjects.Enemies.JetFighter;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -61,6 +62,7 @@ internal static class TiledReader
         ReadTurrets(doc);
         ReadSideGuns(doc);
         ReadMobiles(doc);
+        ReadJetFighters(doc);
 
         Global.World.Map = worldMap;
     }
@@ -155,6 +157,30 @@ internal static class TiledReader
                 );
 
                 Global.World.SideGunManager.Register(sg);
+            }
+        }
+    }
+
+    private static void ReadJetFighters(XElement doc)
+    {
+        var objectGroups = doc.Elements("objectgroup");
+        foreach (var group in objectGroups)
+        {
+            string groupName = group.Attribute("name").Value;
+            if (groupName != "JetFighters") continue;
+
+            foreach (XElement o in group.Elements("object"))
+            {
+                JetFighterInfo jf = new
+                (
+                    ID:             o.Attribute("id").Value,
+                    X:              int.Parse(o.Attribute("x").Value),
+                    Y:              int.Parse(o.Attribute("y").Value),
+                    MovementSpeed:  o.ReadPropertyAsFloat("MovementSpeed", 0.5f),
+                    WakeDistance:   o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
+                );
+
+                Global.World.JetFighterManager.Register(jf);
             }
         }
     }
