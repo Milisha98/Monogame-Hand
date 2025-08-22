@@ -1,5 +1,7 @@
 . Automatically delete projectiles that go off the map
 . Need to add a scoring system.
 
+. Boss
+
 
 
