@@ -3,6 +3,7 @@ using Hands.GameObjects.Enemies.Turret;
 using Hands.GameObjects.Enemies.SideGun;
 using Hands.GameObjects.Enemies.Mobile;
 using Hands.GameObjects.Enemies.JetFighter;
+using Hands.GameObjects.Enemies.Boss;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -63,6 +64,7 @@ internal static class TiledReader
         ReadSideGuns(doc);
         ReadMobiles(doc);
         ReadJetFighters(doc);
+        ReadBoss(doc);
 
         Global.World.Map = worldMap;
     }
@@ -181,6 +183,29 @@ internal static class TiledReader
                 );
 
                 Global.World.JetFighterManager.Register(jf);
+            }
+        }
+    }
+
+    private static void ReadBoss(XElement doc)
+    {
+        var objectGroups = doc.Elements("objectgroup");
+        foreach (var group in objectGroups)
+        {
+            string groupName = group.Attribute("name").Value;
+            if (groupName != "Boss") continue;
+
+            foreach (XElement o in group.Elements("object"))
+            {
+                BossInfo bossInfo = new
+                (
+                    X: int.Parse(o.Attribute("x").Value),
+                    Y: int.Parse(o.Attribute("y").Value),
+                    WakeDistance: o.ReadPropertyAsFloat("WakeDistance", Global.World.GlobalWakeDistance)
+                );
+
+                Global.World.Boss = new Boss(bossInfo);
+                break; // Assuming there's only one boss object
             }
         }
     }

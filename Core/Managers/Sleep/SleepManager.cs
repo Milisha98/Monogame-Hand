@@ -23,6 +23,7 @@ internal class SleepManager : IUpdate
     {
         foreach (var target in _register)
         {
+            if (target == null) continue;
             float distanceToPlayer = Math.Abs(target.MapPosition.Y - Global.World.Player.MapPosition.Y);
             //System.Diagnostics.Debug.WriteLine($"Distance to Player: {distanceToPlayer} - Target: {target.GetType().Name}");
             if (distanceToPlayer > target.WakeDistance)

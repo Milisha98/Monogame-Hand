@@ -9,6 +9,7 @@ using Hands.GameObjects.Enemies.SideGun;
 using Hands.GameObjects.Projectiles;
 using Hands.GameObjects.Enemies.Mobile;
 using Hands.GameObjects.Enemies.JetFighter;
+using Hands.GameObjects.Enemies.Boss;
 
 namespace Hands.Core;
 internal class World
@@ -19,6 +20,7 @@ internal class World
     public Camera2D Camera  { get; set; } = new Camera2D();
     public WorldMap Map     { get; set; } = new();
     public Player Player    { get; set; }
+    public Boss Boss        { get; set; }
 
     // Managers
     public TurretManager        TurretManager       { get; set; } = new TurretManager();
@@ -31,4 +33,6 @@ internal class World
     public ExplosionManager     ExplosionManager    { get; set; } = new ExplosionManager();
     public SmokeManager         SmokeManager        { get; set; } = new SmokeManager();
     public WeaponSpawnManager   WeaponSpawnManager  { get; set; } = new WeaponSpawnManager();
-}
+
+    
+    }

@@ -1,5 +1,4 @@
 ﻿using Hands.Sprites;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,23 +6,23 @@ using System.Threading.Tasks;
 namespace Hands.Core.Managers.Collision;
 public class CollisionManager : IUpdate, IDraw
 {
-    public ConcurrentDictionary<ICollision, byte> _cold = new();
-    public ConcurrentDictionary<ICollision, byte> _hot = new();
+    public HashSet<ICollision> _cold = new();
+    public HashSet<ICollision> _hot = new();
 
     public void Register(ICollision collision)
     {
         if (collision.IsHot)
-            _hot.TryAdd(collision, 0);
+            _hot.Add(collision);
         else
-            _cold.TryAdd(collision, 0);
+            _cold.Add(collision);
     }
 
     public void UnRegister(ICollision collision)
     {
         if (collision.IsHot)
-            _hot.TryRemove(collision, out _);
+            _hot.Remove(collision);
         else
-            _cold.TryRemove(collision, out _);
+            _cold.Remove(collision);
     }
     
     public ICollision CheckCollision(ICollision a)
@@ -83,10 +82,10 @@ public class CollisionManager : IUpdate, IDraw
 
     public ICollision CheckClaytonsCollision(ICollision a)
     {
-        foreach (var c in _cold.Keys)
+        foreach (var c in _cold)
             if (c.Clayton.Intersects(a.Clayton))
                 return c;
-        foreach (var c in _hot.Keys)
+        foreach (var c in _hot)
             if (c.Clayton.Intersects(a.Clayton) && !ReferenceEquals(c, a))
                 return c;
         return null;
@@ -190,25 +189,25 @@ public class CollisionManager : IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        var collisionPairs = new ConcurrentBag<(ICollision hot, ICollision collision)>();
+        var collisionPairs = new List<(ICollision hot, ICollision collision)>();
 
-        // Step 1: Detect all collisions in parallel (read-only operations)
-        var hotObjects = _hot.Keys.ToList(); // Create snapshot to avoid collection modification
-        Parallel.ForEach(hotObjects, hot =>
+        // Step 1: Detect all collisions (now sequential instead of parallel)
+        var hotObjects = _hot.ToList(); // Create snapshot to avoid collection modification
+        foreach (var hot in hotObjects)
         {
             var collision = CheckCollision(hot);
             if (collision != null)
             {
                 collisionPairs.Add((hot, collision));
             }
-        });
+        }
 
         // Step 2: Process collisions sequentially to avoid race conditions
         var markForDestroy = new List<ICollision>();
         foreach (var (hot, collision) in collisionPairs)
         {
             // Double-check that objects are still valid (haven't been removed by another collision)
-            if (!_hot.ContainsKey(hot)) continue;
+            if (!_hot.Contains(hot)) continue;
             
             // Handle the collision
             System.Diagnostics.Debug.WriteLine($"Collision detected: {hot.CollisionType} with {collision.CollisionType} at {hot.Clayton}");
@@ -216,16 +215,16 @@ public class CollisionManager : IUpdate, IDraw
             collision.OnCollide(hot);
 
             // Only remove objects that should be removed on collision
-            if (_hot.ContainsKey(hot) && hot.ShouldRemoveOnCollision)
+            if (_hot.Contains(hot) && hot.ShouldRemoveOnCollision)
                 markForDestroy.Add(hot);
-            if (_hot.ContainsKey(collision) && collision.ShouldRemoveOnCollision)
+            if (_hot.Contains(collision) && collision.ShouldRemoveOnCollision)
                 markForDestroy.Add(collision);
         }
 
         // Step 3: Remove all marked collisions after processing
         foreach (var item in markForDestroy.Distinct())
         {
-            _hot.TryRemove(item, out _);
+            _hot.Remove(item);
         }
     }
 
@@ -235,13 +234,13 @@ public class CollisionManager : IUpdate, IDraw
         Texture2D texture = spriteBatch.BlankTexture();
         
         // Draw hot entities in red
-        foreach (Microsoft.Xna.Framework.Rectangle clayton in _hot.Keys.Select(c => c.Clayton))
+        foreach (Microsoft.Xna.Framework.Rectangle clayton in _hot.Select(c => c.Clayton))
         {
             spriteBatch.Draw(texture, clayton, Microsoft.Xna.Framework.Color.Red);
         }
         
         // Draw cold entities in blue
-        foreach (Microsoft.Xna.Framework.Rectangle clayton in _cold.Keys.Select(c => c.Clayton))
+        foreach (Microsoft.Xna.Framework.Rectangle clayton in _cold.Select(c => c.Clayton))
         {
             spriteBatch.Draw(texture, clayton, Microsoft.Xna.Framework.Color.Blue);
         }
@@ -250,7 +249,7 @@ public class CollisionManager : IUpdate, IDraw
         if (Global.DebugShowCollisionBoxes)
         {
             // Draw detailed collision rectangles for hot entities in yellow
-            foreach (var entity in _hot.Keys)
+            foreach (var entity in _hot)
             {
                 foreach (var rect in entity.CollisionRectangles)
                 {
@@ -259,7 +258,7 @@ public class CollisionManager : IUpdate, IDraw
             }
             
             // Draw detailed collision rectangles for cold entities in orange
-            foreach (var entity in _cold.Keys)
+            foreach (var entity in _cold)
             {
                 foreach (var rect in entity.CollisionRectangles)
                 {

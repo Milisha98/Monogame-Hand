@@ -1,0 +1,11 @@
+namespace Hands.Core.Sprites;
+internal class Size12
+{
+    public static Vector2 Size            { get => new Vector2(12, 12); }
+    public static Vector2 Center          { get => new Vector2(6, 6); }
+    public static Vector2 Width           { get => new Vector2(12, 0); }
+    public static Vector2 Height          { get => new Vector2(0, 12); }
+    public static Point Point             { get => new Point(12, 12); }
+    public static Vector2 HalfWidth       => Width / 2;
+    public static Vector2 HalfHeight      => Height / 2;
+}

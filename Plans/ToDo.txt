@@ -2,6 +2,7 @@
 . Need to add a scoring system.
 
 . Boss
+. Still that bug where enemy mobiles blow up from non-player projectile collisions
 
 
 
