@@ -24,7 +24,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         _info = info;
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
 
-        _keyboard = new Key(new KeyInfo(info.X, info.Y, 896));
+        _keyboard = new Key(new KeyInfo(info.X, info.Y, 896, 300));
 
         // Register with SleepManager
         Global.World.SleepManager.Register(this);
