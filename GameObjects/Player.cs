@@ -45,6 +45,7 @@ internal class Player : IGameObject, IMapPosition, ICollision
         }
 
         UpdateInput(gameTime);
+        CheckForFastFoward();
 
         // Weapons
         MainWeapon.Update(gameTime);
@@ -69,6 +70,17 @@ internal class Player : IGameObject, IMapPosition, ICollision
         else
         {
             System.Diagnostics.Debug.WriteLine($"Player collision detected at {proposedMapPosition} with {collisionType}");
+        }
+
+    }
+
+    private void CheckForFastFoward()
+    {
+        if (KeyboardController.CheckAllKeysDown(Microsoft.Xna.Framework.Input.Keys.LeftShift, 
+                                                Microsoft.Xna.Framework.Input.Keys.LeftControl,
+                                                Microsoft.Xna.Framework.Input.Keys.F))
+        {
+            MapPosition = new Vector2(512, 3000);
         }
     }
 

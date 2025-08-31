@@ -40,6 +40,12 @@ internal static class KeyboardController
         return keys.Any(x => keyboardState.IsKeyDown(x));
     }
 
+    public static bool CheckAllKeysDown(params Keys[] keys)
+    {
+        var keyboardState = Keyboard.GetState();
+        return keys.All(x => keyboardState.IsKeyDown(x));
+    }
+
     public static Keys[] KeysPressed()
     {
         var keyboardState = Keyboard.GetState();

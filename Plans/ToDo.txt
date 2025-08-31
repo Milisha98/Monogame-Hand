@@ -1,8 +1,13 @@
-. Automatically delete projectiles that go off the map
-. Need to add a scoring system.
+. Fast Forward to Boss
 
-. Boss
-. Still that bug where enemy mobiles blow up from non-player projectile collisions
+. Boss fight
+	. Key Shadow (not quite right)
+	. Construction of Keyboard
+
+
+
+. Need to add a scoring system.
+. Player Health display
 
 
 

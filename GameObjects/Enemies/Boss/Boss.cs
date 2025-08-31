@@ -10,26 +10,34 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Hands.GameObjects.Enemies.Boss;
-public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, ICollision
+public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
 {
     const float Width = 896;
     const float Height = 320;
 
     private readonly BossInfo _info;
+    private readonly Key _keyboard;
 
     public Boss(BossInfo info)
     {
         MapPosition = new Vector2(info.X, info.Y);
         _info = info;
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
-        
+
+        _keyboard = new Key(new KeyInfo(info.X, info.Y, 896));
+
         // Register with SleepManager
         Global.World.SleepManager.Register(this);
     }
+
+    #region ILoadContent
+
     public void LoadContent(ContentManager contentManager)
     {
         Sprite.LoadContent(contentManager);
     }
+
+    #endregion
 
     #region IMapPosition
 
@@ -38,12 +46,6 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, ICollision
     public Vector2 Dimensions { get => new Vector2(Width, Height); }
 
     #endregion
-
-    //
-    // Properties
-    //
-    public KeyboardSprite Sprite { get; init; } = new();
-    public BossState State { get; private set; } = BossState.Asleep;
 
     #region IUpdate
 
@@ -54,6 +56,24 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, ICollision
 
         // Boss update logic will go here when active
         // For now, just maintain active state
+    }
+
+    #endregion
+
+    #region IDraw
+
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        // First draw they Keyboard
+        _keyboard.Draw(spriteBatch);
+
+        // Draw the Keys
+
+        // Draw the Keys Shadows
+
+        // Draw the Shadows
+        _keyboard.DrawShadow(spriteBatch);
+
     }
 
     #endregion
@@ -80,35 +100,16 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, ICollision
 
     #endregion
 
-    #region ICollision
+    #region Properties
 
-    public Rectangle Clayton => new Rectangle((MapPosition - (Dimensions / 2)).ToPoint(), Dimensions.ToPoint());
-
-    public Rectangle[] CollisionRectangles
-    {
-        get
-        {
-            // For now, use a simple collision rectangle based on the boss dimensions
-            // This can be refined later with more detailed collision points like Mobile
-            return [Clayton];
-        }
-    }
-
-    public CollisionType CollisionType => CollisionType.Mobile;
-
-    public bool IsHot => State == BossState.Active; // Only hot when active
-
-    public bool ShouldRemoveOnCollision => false; // Boss should not be removed on collision
-
-    public void OnCollide(ICollision other)
-    {
-        if (State == BossState.Destroyed) return;
-
-        // Boss collision handling logic can be added here
-        // For now, boss doesn't get destroyed by collisions
-    }
+    //
+    // Properties
+    //
+    public KeyboardSprite Sprite { get; init; } = new();
+    public BossState State { get; private set; } = BossState.Asleep;
 
     #endregion
+   
 
 }
 

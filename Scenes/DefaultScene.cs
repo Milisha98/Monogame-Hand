@@ -35,6 +35,9 @@ internal class DefaultScene : IScene
         Global.World.SmokeManager.LoadContent(contentManager);
         Global.World.WeaponSpawnManager.LoadContent(contentManager);
 
+        // Load Boss content if Boss exists
+        Global.World.Boss.LoadContent(contentManager);
+
     }
     public void Update(GameTime gameTime)
     {
@@ -52,8 +55,10 @@ internal class DefaultScene : IScene
         Global.World.SmokeManager.Update(gameTime);
         Global.World.WeaponSpawnManager.Update(gameTime);
 
+        // Update Boss
+        Global.World.Boss.Update(gameTime);
+
         // Move Camera to lock on the Player
-        // TODO: In the future, there might be a deadzone for the camera movement
         Global.World.Camera.Position = new(Global.World.Camera.Position.X, Global.World.Player.MapPosition.Y - CameraOffsetY);
     }
 
@@ -73,6 +78,9 @@ internal class DefaultScene : IScene
         Global.World.ExplosionManager.Draw(spriteBatch);
         Global.World.SmokeManager.Draw(spriteBatch);
         Global.World.WeaponSpawnManager.Draw(spriteBatch);
+
+        // Draw Boss
+        Global.World.Boss.Draw(spriteBatch);
 
         if (Global.DebugShowClaytonCollisionBoxes || Global.DebugShowCollisionBoxes)
         {
