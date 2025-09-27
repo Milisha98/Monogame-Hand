@@ -21,8 +21,8 @@ public class Key : IDraw, IMapPosition, ICollision
         int w = Size12.Point.X;
 
         DrawKeyLeft(spriteBatch);
-        DrawSpacers(spriteBatch);
-        DrawModSpacer(spriteBatch, w);
+        DrawHorizontalSpacers(spriteBatch);
+        DrawHorizontalModSpacer(spriteBatch, w);
         DrawKeyRight(spriteBatch, w);
     }
 
@@ -97,7 +97,7 @@ public class Key : IDraw, IMapPosition, ICollision
     }
 
 
-    private void DrawSpacers(SpriteBatch spriteBatch)
+    private void DrawHorizontalSpacers(SpriteBatch spriteBatch)
     {
         // Draw Spacers
         Vector2 pos = MapPosition + Size12.Width;
@@ -119,7 +119,7 @@ public class Key : IDraw, IMapPosition, ICollision
 
     }
 
-    private void DrawModSpacer(SpriteBatch spriteBatch, int w)
+    private void DrawHorizontalModSpacer(SpriteBatch spriteBatch, int w)
     {
         // Draw Mod Spacer if needed
         if (SpacerModWidth > 0)
