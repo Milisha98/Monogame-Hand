@@ -2,17 +2,16 @@ using Hands.Core;
 using Hands.Core.Sprites;
 using Hands.Core.Managers.Collision;
 using Hands.Core.Animation;
-using Microsoft.Xna.Framework.Graphics;
+using Hands.GameObjects.Projectiles;
+
 namespace Hands.GameObjects.Enemies.Boss;
 public class Key : IDraw, IMapPosition, ICollision, IUpdate
 {
     private readonly KeyInfo _keyInfo;
     public Boss Boss => Global.World.Boss;
     
-    // Glow properties
-    private GlowSettings _glowSettings = new();
-    private Tween _glowTween;
-    private float _glowIntensity = 0f; // Current glow intensity 0.0 to 1.0
+    // Callback for when this key is interrupted (shot by player)
+    public Action OnInterrupted { get; set; }
     
     /// <summary>
     /// The current tint color for rendering the key (includes glow effect)
@@ -248,14 +247,24 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
 
     public CollisionType CollisionType => CollisionType.Turret;
 
-    public bool IsHot { get; set; } = true; // Keys are always active for collision
+    public bool IsHot { get; set; } = false; // Keys are static collision objects
 
     public bool ShouldRemoveOnCollision => false; // Keys should not be removed when hit
 
     public void OnCollide(ICollision other)
     {
-        // Keys don't react to collisions - they are solid barriers
-        // The collision system handles the response for the other object
+        // Only react to player projectiles when glowing (can be interrupted)
+        if (other.CollisionType == CollisionType.ProjectilePlayer && GlowIntensity > 0)
+        {
+            // Set intensity to 0 immediately
+            GlowIntensity = 0f;
+            
+            // Notify the phase that this key was interrupted
+            OnInterrupted?.Invoke();
+            
+            // The collision system will handle destroying the projectile
+        }
+        // Keys are otherwise solid barriers that don't react to collisions
     }
 
     #endregion
@@ -264,74 +273,50 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
     
     public void Update(GameTime gameTime)
     {
-        UpdateGlow(gameTime);
-        
         // Update tint color based on glow intensity
-        TintColor = _glowIntensity > 0 ? Color.Lerp(Color.White, Color.Red, _glowIntensity) : Color.White;
+        TintColor = GlowIntensity > 0 ? Color.Lerp(Color.White, Color.Red, GlowIntensity) : Color.White;
     }
     
     #endregion
     
-    #region Glow Methods
     
     /// <summary>
-    /// Starts the glow effect with the specified settings
+    /// Gets or sets the glow intensity (0.0 to 1.0)
     /// </summary>
-    public void StartGlow(GlowSettings glowSettings)
-    {
-        _glowSettings = glowSettings;
-        if (_glowSettings.IsEnabled)
-        {
-            _glowTween = new Tween(TimeSpan.FromSeconds(_glowSettings.DurationSeconds));
-            _glowTween.OnCompleted += OnGlowCycleCompleted;
-        }
-    }
+    public float GlowIntensity { get; set; } = 0f;
+    
+    
+    #region Shooting
     
     /// <summary>
-    /// Stops the glow effect
+    /// Shoots a fan of bullets downward from the center of the key
     /// </summary>
-    public void StopGlow()
+    public void ShootBulletFan()
     {
-        _glowSettings = new GlowSettings(false);
-        _glowTween = null;
-        _glowIntensity = 0f;
-    }
-    
-    /// <summary>
-    /// Gets whether the key is currently glowing
-    /// </summary>
-    public bool IsGlowing => _glowSettings.IsEnabled && _glowTween != null;
-    
-    private void UpdateGlow(GameTime gameTime)
-    {
-        if (!_glowSettings.IsEnabled || _glowTween == null)
-        {
-            _glowIntensity = 0f;
-            return;
-        }
+        const int bulletCount = 10;
+        const float fanAngleDegrees = 15f; // 15 degrees between each bullet
+        const float totalFanAngle = (bulletCount - 1) * fanAngleDegrees * MathF.PI / 180f; // Convert to radians
+        const float startAngle = MathF.PI / 2f - totalFanAngle / 2f; // Start angle for the fan (pointing down)
+        const float bulletSpeed = 3f;
         
-        float progress = _glowTween.Update(gameTime);
-        _glowIntensity = EaseInOutSine(progress);
-    }
-    
-    private void OnGlowCycleCompleted()
-    {
-        if (_glowSettings.ShouldRepeat)
+        Vector2 shootPosition = MapPosition + new Vector2(_keyInfo.Width / 2f, _keyInfo.Height); // Bottom center of key
+        
+        for (int i = 0; i < bulletCount; i++)
         {
-            _glowTween.Reset();
+            float angle = startAngle + (i * fanAngleDegrees * MathF.PI / 180f);
+            Vector2 direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+            Vector2 velocity = direction * bulletSpeed;
+            
+            var projectileInfo = new ProjectileInfo(
+                ProjectileType.RedBall, // Use red bullets for boss
+                shootPosition,
+                velocity,
+                1f, // Scale
+                CollisionType.ProjectileEnemy
+            );
+            
+            Global.World.ProjectileManager.Register(projectileInfo);
         }
-        else
-        {
-            StopGlow();
-        }
-    }
-    
-    /// <summary>
-    /// EaseInOutSine easing function from https://easings.net/#easeInOutSine
-    /// </summary>
-    private static float EaseInOutSine(float x)
-    {
-        return -(MathF.Cos(MathF.PI * x) - 1) / 2;
     }
     
     #endregion

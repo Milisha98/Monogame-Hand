@@ -117,33 +117,56 @@ public class CollisionManager : IUpdate, IDraw
 
         return (a, b) switch
         {
+            // ProjectilePlayer collisions
             (CollisionType.ProjectilePlayer,    CollisionType.Wall)             => true,
+            (CollisionType.Wall,                CollisionType.ProjectilePlayer) => true,
             (CollisionType.ProjectilePlayer,    CollisionType.Mount)            => false,
+            (CollisionType.Mount,               CollisionType.ProjectilePlayer) => false,
             (CollisionType.ProjectilePlayer,    CollisionType.Turret)           => true,
+            (CollisionType.Turret,              CollisionType.ProjectilePlayer) => true,
             (CollisionType.ProjectilePlayer,    CollisionType.ProjectileEnemy)  => true,
-            (CollisionType.ProjectilePlayer,    CollisionType.Player)           => false,
-            (CollisionType.ProjectilePlayer,    CollisionType.Mobile)           => true,
-            (CollisionType.ProjectilePlayer,    CollisionType.JetFighter)       => true,
-            (CollisionType.ProjectileEnemy,     CollisionType.Wall)             => true,
-            (CollisionType.ProjectileEnemy,     CollisionType.Mount)            => false,
-            (CollisionType.ProjectileEnemy,     CollisionType.Turret)           => false,
-            (CollisionType.ProjectileEnemy,     CollisionType.Mobile)           => false,
             (CollisionType.ProjectileEnemy,     CollisionType.ProjectilePlayer) => true,
-            (CollisionType.ProjectileEnemy,     CollisionType.Player)           => true,
-            (CollisionType.Player,              CollisionType.Wall)             => true,
-            (CollisionType.Player,              CollisionType.Mount)            => true,
-            (CollisionType.Player,              CollisionType.Turret)           => true,
+            (CollisionType.ProjectilePlayer,    CollisionType.Player)           => false,
             (CollisionType.Player,              CollisionType.ProjectilePlayer) => false,
+            (CollisionType.ProjectilePlayer,    CollisionType.Mobile)           => true,
+            (CollisionType.Mobile,              CollisionType.ProjectilePlayer) => true,
+            (CollisionType.ProjectilePlayer,    CollisionType.JetFighter)       => true,
+            (CollisionType.JetFighter,          CollisionType.ProjectilePlayer) => true,
+            
+            // ProjectileEnemy collisions
+            (CollisionType.ProjectileEnemy,     CollisionType.Wall)             => true,
+            (CollisionType.Wall,                CollisionType.ProjectileEnemy)  => true,
+            (CollisionType.ProjectileEnemy,     CollisionType.Mount)            => false,
+            (CollisionType.Mount,               CollisionType.ProjectileEnemy)  => false,
+            (CollisionType.ProjectileEnemy,     CollisionType.Turret)           => false,
+            (CollisionType.Turret,              CollisionType.ProjectileEnemy)  => false,
+            (CollisionType.ProjectileEnemy,     CollisionType.Mobile)           => false,
+            (CollisionType.Mobile,              CollisionType.ProjectileEnemy)  => false,
+            (CollisionType.ProjectileEnemy,     CollisionType.Player)           => true,
             (CollisionType.Player,              CollisionType.ProjectileEnemy)  => true,
+            (CollisionType.ProjectileEnemy,     CollisionType.JetFighter)       => false,
+            (CollisionType.JetFighter,          CollisionType.ProjectileEnemy)  => false,
+            
+            // Player collisions
+            (CollisionType.Player,              CollisionType.Wall)             => true,
+            (CollisionType.Wall,                CollisionType.Player)           => true,
+            (CollisionType.Player,              CollisionType.Mount)            => true,
+            (CollisionType.Mount,               CollisionType.Player)           => true,
+            (CollisionType.Player,              CollisionType.Turret)           => true,
             (CollisionType.Player,              CollisionType.Mobile)           => true,
             (CollisionType.Player,              CollisionType.JetFighter)       => true,
             (CollisionType.Player,              CollisionType.WeaponSpawn)      => true,
+            (CollisionType.WeaponSpawn,         CollisionType.Player)           => true,
+            
+            // Mobile collisions
             (CollisionType.Mobile,              CollisionType.Wall)             => true,
+            (CollisionType.Wall,                CollisionType.Mobile)           => true,
             (CollisionType.Mobile,              CollisionType.Mount)            => true,
+            (CollisionType.Mount,               CollisionType.Mobile)           => true,
             (CollisionType.Mobile,              CollisionType.Player)           => false,
             (CollisionType.Mobile,              CollisionType.Turret)           => false,
-            (CollisionType.Mobile,              CollisionType.ProjectilePlayer) => true,
-            (CollisionType.Mobile,              CollisionType.ProjectileEnemy)  => false,
+            (CollisionType.Turret,              CollisionType.Mobile)           => false,
+            
             (_, _) => false
         };
     }

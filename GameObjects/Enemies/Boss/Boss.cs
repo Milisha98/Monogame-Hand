@@ -31,6 +31,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         WakeDistance = _info.WakeDistance <= 0f ? Global.World.GlobalWakeDistance : _info.WakeDistance;
 
         _keyboard = new Key(new KeyInfo(info.X, info.Y, 896, 300));
+        _keyboard.IsHot = false; // Keyboard frame shouldn't participate in collision detection
         _keys = InitiateKeys();
         
         // Initialize phase handlers
@@ -149,8 +150,8 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
-        if (State == BossState.Destroyed) return;
-        if (State == BossState.Asleep) return;
+        if (State == BossState.Asleep || State == BossState.Destroyed)
+            return;
 
         // Update all keys (including glow animation)
         foreach (var key in _keys)
@@ -201,6 +202,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     public void OnSisterAwake()
     {
         if (State == BossState.Destroyed) return;
+        
         State = BossState.Active;
         IsAsleep = false;
 

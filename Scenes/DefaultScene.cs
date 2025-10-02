@@ -73,14 +73,14 @@ internal class DefaultScene : IScene
         Global.World.MobileManager.Draw(spriteBatch);
         Global.World.JetFighterManager.Draw(spriteBatch);
 
+        // Draw Boss (before projectiles so projectiles appear on top)
+        Global.World.Boss.Draw(spriteBatch);
+        
         Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
         Global.World.ExplosionManager.Draw(spriteBatch);
         Global.World.SmokeManager.Draw(spriteBatch);
         Global.World.WeaponSpawnManager.Draw(spriteBatch);
-
-        // Draw Boss
-        Global.World.Boss.Draw(spriteBatch);
 
         if (Global.DebugShowClaytonCollisionBoxes || Global.DebugShowCollisionBoxes)
         {

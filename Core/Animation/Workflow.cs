@@ -72,7 +72,7 @@ public class Workflow<T>
     public bool IsComplete { get; private set; } = false;
     public float CurrentPercent { get; private set; } = 0f;
     public bool IsActive { get; set; } = true;
-    public WorkflowStage<T> CurrentStage => _stages[_stageIndex];
+    public WorkflowStage<T> CurrentStage => _stageIndex >= 0 && _stageIndex < _stages.Length ? _stages[_stageIndex] : _stages[0];
     public T CurrentState => CurrentStage.State;
 
 }

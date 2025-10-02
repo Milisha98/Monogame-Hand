@@ -44,10 +44,19 @@ internal class ProjectileManager : ILoadContent, IUpdate, IDraw
 
     public void Update(GameTime gameTime)
     {
+        // Create snapshot to avoid collection modification during enumeration
+        var projectileSnapshot = _projectiles.ToList();
+        
         // Too many weird things happen with parallel updates, so we will use a simple foreach loop
-        foreach (var projectile in _projectiles)
+        foreach (var projectile in projectileSnapshot)
         {
             projectile?.Update(gameTime);
+            
+            // Mark projectiles for deletion if they go off-screen horizontally
+            if (projectile != null && (projectile.MapPosition.X < 0 || projectile.MapPosition.X > 1152))
+            {
+                projectile.MarkForDeletion = true;
+            }
         }
 
         // Unregister all projectiles marked for deletion
