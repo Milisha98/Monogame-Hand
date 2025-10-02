@@ -267,7 +267,7 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
         UpdateGlow(gameTime);
         
         // Update tint color based on glow intensity
-        TintColor = _glowIntensity > 0 ? Color.Lerp(Color.White, Color.Yellow, _glowIntensity) : Color.White;
+        TintColor = _glowIntensity > 0 ? Color.Lerp(Color.White, Color.Red, _glowIntensity) : Color.White;
     }
     
     #endregion

@@ -18,6 +18,11 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     private readonly BossInfo _info;
     private readonly Key _keyboard;
     private readonly HashSet<Key> _keys;
+    
+    // Phase management
+    private BossPhase _currentPhase = BossPhase.Phase1_ChaosKeys;
+    private IBossPhase _currentPhaseHandler;
+    private readonly Dictionary<BossPhase, IBossPhase> _phaseHandlers;
 
     public Boss(BossInfo info)
     {
@@ -27,6 +32,16 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
 
         _keyboard = new Key(new KeyInfo(info.X, info.Y, 896, 300));
         _keys = InitiateKeys();
+        
+        // Initialize phase handlers
+        _phaseHandlers = new Dictionary<BossPhase, IBossPhase>
+        {
+            { BossPhase.Phase1_ChaosKeys, new Phase1ChaosKeys() },
+            // Phase 2 and 3 will be added later
+        };
+        
+        // Start with Phase 1 (but don't activate until boss wakes up)
+        _currentPhaseHandler = _phaseHandlers[_currentPhase];
 
         // Register with SleepManager
         Global.World.SleepManager.Register(this);
@@ -142,9 +157,12 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         {
             key.Update(gameTime);
         }
-
-        // Boss update logic will go here when active
-        // For now, just maintain active state
+        
+        // Update current phase
+        _currentPhaseHandler?.Update(gameTime, this, _keys);
+        
+        // Check for phase transitions
+        CheckPhaseTransition();
     }
 
     #endregion
@@ -186,7 +204,8 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         State = BossState.Active;
         IsAsleep = false;
 
-        // Boss-specific wake up logic can be added here
+        // Start Phase 1 when boss wakes up
+        _currentPhaseHandler?.OnEnter(this, _keys);
     }
 
     public void OnSleep()
@@ -206,6 +225,46 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     public SpriteFont KeyFont { get; private set; }
     public BossState State { get; private set; } = BossState.Asleep;
 
+    #endregion
+    
+    #region Phase Management
+    
+    private void CheckPhaseTransition()
+    {
+        if (_currentPhaseHandler == null || !_currentPhaseHandler.IsComplete)
+            return;
+            
+        var nextPhase = _currentPhaseHandler.NextPhase;
+        if (nextPhase == null)
+        {
+            // No more phases, boss fight is complete
+            State = BossState.Destroyed;
+            return;
+        }
+        
+        // Exit current phase
+        _currentPhaseHandler.OnExit(this, _keys);
+        
+        // Transition to next phase
+        _currentPhase = nextPhase.Value;
+        if (_phaseHandlers.TryGetValue(_currentPhase, out var newPhaseHandler))
+        {
+            _currentPhaseHandler = newPhaseHandler;
+            _currentPhaseHandler.OnEnter(this, _keys);
+        }
+        else
+        {
+            // Phase not implemented yet, end boss fight
+            _currentPhaseHandler = null;
+            State = BossState.Destroyed;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the current boss phase
+    /// </summary>
+    public BossPhase CurrentPhase => _currentPhase;
+    
     #endregion
    
 
