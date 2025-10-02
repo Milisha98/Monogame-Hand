@@ -1,6 +1,7 @@
-﻿using Hands.Core;
+using Hands.Core;
 using Hands.Core.Sprites;
 using Hands.Core.Managers.Collision;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Hands.GameObjects.Enemies.Boss;
 public class Key : IDraw, IMapPosition, ICollision
@@ -24,6 +25,9 @@ public class Key : IDraw, IMapPosition, ICollision
         DrawHorizontalSpacers(spriteBatch);
         DrawHorizontalModSpacer(spriteBatch, w);
         DrawKeyRight(spriteBatch, w);
+        
+        // Draw key text labels
+        DrawKeyText(spriteBatch);
     }
 
     public void DrawShadow(SpriteBatch spriteBatch)
@@ -162,6 +166,51 @@ public class Key : IDraw, IMapPosition, ICollision
         pos += Size12.Height;
         spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[10].SourceRectangle, Color.White);
 
+    }
+    
+    private void DrawKeyText(SpriteBatch spriteBatch)
+    {
+        // Don't draw text if there's no font loaded or no text to draw
+        if (Boss.KeyFont == null || (string.IsNullOrEmpty(_keyInfo.Key1) && string.IsNullOrEmpty(_keyInfo.Key2)))
+            return;
+            
+        const int marginTopBottom = 2; // 2 pixel margin from top and bottom edges
+        Vector2 keyCenter = MapPosition + new Vector2(_keyInfo.Width / 2.0f, _keyInfo.Height / 2.0f);
+        
+        // If Key2 is empty/null, center Key1 in the middle of the key
+        if (string.IsNullOrEmpty(_keyInfo.Key2))
+        {
+            if (!string.IsNullOrEmpty(_keyInfo.Key1))
+            {
+                Vector2 textSize = Boss.KeyFont.MeasureString(_keyInfo.Key1);
+                Vector2 textPosition = keyCenter - (textSize / 2);
+                spriteBatch.DrawString(Boss.KeyFont, _keyInfo.Key1, textPosition, Color.WhiteSmoke);
+            }
+        }
+        else
+        {
+            // Calculate available height for text positioning (excluding margins)
+            float availableHeight = _keyInfo.Height - (marginTopBottom * 2);
+            
+            // Draw Key1 at the top center of the key (with margin)
+            if (!string.IsNullOrEmpty(_keyInfo.Key1))
+            {
+                Vector2 key1Size = Boss.KeyFont.MeasureString(_keyInfo.Key1);
+                Vector2 key1Position = new Vector2(
+                    keyCenter.X - (key1Size.X / 2),
+                    MapPosition.Y + marginTopBottom + (availableHeight * 0.25f) - (key1Size.Y / 2)
+                );
+                spriteBatch.DrawString(Boss.KeyFont, _keyInfo.Key1, key1Position, Color.WhiteSmoke);
+            }
+            
+            // Draw Key2 at the bottom center of the key (with margin)
+            Vector2 key2Size = Boss.KeyFont.MeasureString(_keyInfo.Key2);
+            Vector2 key2Position = new Vector2(
+                keyCenter.X - (key2Size.X / 2),
+                MapPosition.Y - marginTopBottom + (availableHeight * 0.75f) - (key2Size.Y / 2)
+            );
+            spriteBatch.DrawString(Boss.KeyFont, _keyInfo.Key2, key2Position, Color.WhiteSmoke);
+        }
     }
 
     #endregion

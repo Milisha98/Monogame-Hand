@@ -117,6 +117,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     public void LoadContent(ContentManager contentManager)
     {
         Sprite.LoadContent(contentManager);
+        KeyFont = contentManager.Load<SpriteFont>("File");
     }
 
     #endregion
@@ -196,6 +197,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     // Properties
     //
     public KeyboardSprite Sprite { get; init; } = new();
+    public SpriteFont KeyFont { get; private set; }
     public BossState State { get; private set; } = BossState.Asleep;
 
     #endregion
