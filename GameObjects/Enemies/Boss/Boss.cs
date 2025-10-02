@@ -23,6 +23,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     private BossPhase _currentPhase = BossPhase.Phase1_ChaosKeys;
     private IBossPhase _currentPhaseHandler;
     private readonly Dictionary<BossPhase, IBossPhase> _phaseHandlers;
+    
 
     public Boss(BossInfo info)
     {
@@ -153,14 +154,14 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         if (State == BossState.Asleep || State == BossState.Destroyed)
             return;
 
+        // Update current phase (handles boss movement and key glow)
+        _currentPhaseHandler?.Update(gameTime, this, _keys);
+        
         // Update all keys (including glow animation)
         foreach (var key in _keys)
         {
             key.Update(gameTime);
         }
-        
-        // Update current phase
-        _currentPhaseHandler?.Update(gameTime, this, _keys);
         
         // Check for phase transitions
         CheckPhaseTransition();
@@ -226,6 +227,8 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     public KeyboardSprite Sprite { get; init; } = new();
     public SpriteFont KeyFont { get; private set; }
     public BossState State { get; private set; } = BossState.Asleep;
+    public IEnumerable<Key> Keys => _keys;
+    public Key KeyboardFrame => _keyboard;
 
     #endregion
     
@@ -266,6 +269,7 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
     /// Gets the current boss phase
     /// </summary>
     public BossPhase CurrentPhase => _currentPhase;
+    
     
     #endregion
    

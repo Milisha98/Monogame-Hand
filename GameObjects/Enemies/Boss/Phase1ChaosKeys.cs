@@ -25,6 +25,10 @@ public class Phase1ChaosKeys : IBossPhase
     private readonly Random _random = new();
     private Key _currentGlowingKey = null;
     private bool _keyWasInterrupted = false;
+    
+    // Boss movement
+    private int _movementDirection = 1; // 1 for right, -1 for left
+    private const float MovementSpeed = 0.5f; // pixels per frame
 
     public bool IsComplete => _phaseTween?.IsComplete ?? false;
     public BossPhase? NextPhase => BossPhase.Phase2_SpellShutdown;
@@ -59,6 +63,9 @@ public class Phase1ChaosKeys : IBossPhase
         
         // Update current key's glow intensity based on workflow state
         UpdateCurrentKeyGlow();
+        
+        // Update boss horizontal movement
+        UpdateBossMovement(boss);
     }
 
     public void OnExit(Boss boss, IEnumerable<Key> keys)
@@ -180,5 +187,41 @@ public class Phase1ChaosKeys : IBossPhase
     private static float EaseInOutSine(float x)
     {
         return -(MathF.Cos(MathF.PI * x) - 1) / 2;
+    }
+    
+    /// <summary>
+    /// Updates boss horizontal movement between x=64 and x=1088-896=192
+    /// </summary>
+    private void UpdateBossMovement(Boss boss)
+    {
+        const float LeftBound = 64f;
+        const float RightBound = 1088f - 896f; // Screen right - boss width
+        
+        Vector2 movementDelta = new Vector2(MovementSpeed * _movementDirection, 0);
+        
+        // Check bounds and reverse direction if needed
+        float newX = boss.MapPosition.X + movementDelta.X;
+        if (newX <= LeftBound)
+        {
+            _movementDirection = 1; // Move right
+            movementDelta.X = LeftBound - boss.MapPosition.X; // Clamp to bound
+        }
+        else if (newX >= RightBound)
+        {
+            _movementDirection = -1; // Move left  
+            movementDelta.X = RightBound - boss.MapPosition.X; // Clamp to bound
+        }
+        
+        // Apply movement to boss and all keys
+        boss.MapPosition += movementDelta;
+        
+        // Move all keys with the boss
+        foreach (var key in boss.Keys)
+        {
+            key.MapPosition += movementDelta;
+        }
+        
+        // Also move the keyboard frame
+        boss.KeyboardFrame.MapPosition += movementDelta;
     }
 }

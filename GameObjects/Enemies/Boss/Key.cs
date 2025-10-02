@@ -234,7 +234,7 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
 
     #region IMapPosition
 
-    public Vector2 MapPosition { get; private set; }
+    public Vector2 MapPosition { get; set; }
     public Vector2 Center => MapPosition + Size12.Center;
 
     #endregion
