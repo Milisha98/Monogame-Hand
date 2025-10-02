@@ -26,15 +26,17 @@ A corrupted AI defense system shaped like a fragmented keyboard. The boss guards
 
 ---
 
-### Phase 2: Spell “UNLOCK”
+### Phase 2: Spell “SHUTDOWN”
 
-- One letter from the word **UNLOCK** glows at a time.
+- One letter from the word **SHUTDOWN** glows at a time.
 
 - Only one key is active at a time to simplify targeting.
 
 - Shooting the correct key progresses the sequence.
 
-- Optional: Incorrect shots can be ignored or trigger retaliation.
+- Optional: Incorrect shots will trigger retaliation of either:
+	- Fire bullet pattern
+	- Spawn fighters, in random but not overlapping x coordinates, positioned just off the top of the screen.
 
 ---
 

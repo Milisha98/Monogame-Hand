@@ -1,13 +1,23 @@
 using Hands.Core;
 using Hands.Core.Sprites;
 using Hands.Core.Managers.Collision;
+using Hands.Core.Animation;
 using Microsoft.Xna.Framework.Graphics;
-
 namespace Hands.GameObjects.Enemies.Boss;
-public class Key : IDraw, IMapPosition, ICollision
+public class Key : IDraw, IMapPosition, ICollision, IUpdate
 {
     private readonly KeyInfo _keyInfo;
     public Boss Boss => Global.World.Boss;
+    
+    // Glow properties
+    private GlowSettings _glowSettings = new();
+    private Tween _glowTween;
+    private float _glowIntensity = 0f; // Current glow intensity 0.0 to 1.0
+    
+    /// <summary>
+    /// The current tint color for rendering the key (includes glow effect)
+    /// </summary>
+    public Color TintColor { get; private set; } = Color.White;
 
     public Key(KeyInfo info)
     {
@@ -88,16 +98,16 @@ public class Key : IDraw, IMapPosition, ICollision
     {
         // Always draw the left
         var pos = MapPosition;
-        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[0].SourceRectangle, Color.White);
+        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[0].SourceRectangle, TintColor);
 
         for (int i = 0; i < SpacerFramesY; i++)
         {
             pos = MapPosition + Size12.Height + (Size12.Height * i);
-            spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[4].SourceRectangle, Color.White);
+            spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[4].SourceRectangle, TintColor);
         }
 
         pos += Size12.Height;
-        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[8].SourceRectangle, Color.White);
+        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[8].SourceRectangle, TintColor);
     }
 
 
@@ -116,7 +126,7 @@ public class Key : IDraw, IMapPosition, ICollision
                     _ => (y == SpacerFramesY + 1) ? 9 : 5,
                 };
 
-                spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[frame].SourceRectangle, Color.White);
+                spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[frame].SourceRectangle, TintColor);
                 pos += Size12.Height;
             }
         }
@@ -132,21 +142,21 @@ public class Key : IDraw, IMapPosition, ICollision
             Vector2 pos = new(x, MapPosition.Y);
             Rectangle sourceRect = Boss.Sprite.Frames[1].SourceRectangle;
             sourceRect.Width = SpacerModWidth;
-            spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, Color.White);
+            spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, TintColor);
 
             for (int y = 0; y < SpacerFramesY; y++)
             {
                 pos += Size12.Height;
                 sourceRect = Boss.Sprite.Frames[5].SourceRectangle;
                 sourceRect.Width = SpacerModWidth;
-                spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, Color.White);
+                spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, TintColor);
 
             }
 
             sourceRect = Boss.Sprite.Frames[9].SourceRectangle;
             sourceRect.Width = SpacerModWidth;
             pos += Size12.Height;
-            spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, Color.White);
+            spriteBatch.Draw(Boss.Sprite.Texture, pos, sourceRect, TintColor);
         }
     }
 
@@ -155,16 +165,16 @@ public class Key : IDraw, IMapPosition, ICollision
         // Always draw the left
         float rx = MapPosition.X + _keyInfo.Width - w;
         Vector2 pos = new(rx, MapPosition.Y);
-        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[2].SourceRectangle, Color.White);
+        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[2].SourceRectangle, TintColor);
 
         for (int i = 0; i < SpacerFramesY; i++)
         {
             pos += Size12.Height;
-            spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[6].SourceRectangle, Color.White);
+            spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[6].SourceRectangle, TintColor);
         }
 
         pos += Size12.Height;
-        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[10].SourceRectangle, Color.White);
+        spriteBatch.Draw(Boss.Sprite.Texture, pos, Boss.Sprite.Frames[10].SourceRectangle, TintColor);
 
     }
     
@@ -248,6 +258,82 @@ public class Key : IDraw, IMapPosition, ICollision
         // The collision system handles the response for the other object
     }
 
+    #endregion
+    
+    #region IUpdate
+    
+    public void Update(GameTime gameTime)
+    {
+        UpdateGlow(gameTime);
+        
+        // Update tint color based on glow intensity
+        TintColor = _glowIntensity > 0 ? Color.Lerp(Color.White, Color.Yellow, _glowIntensity) : Color.White;
+    }
+    
+    #endregion
+    
+    #region Glow Methods
+    
+    /// <summary>
+    /// Starts the glow effect with the specified settings
+    /// </summary>
+    public void StartGlow(GlowSettings glowSettings)
+    {
+        _glowSettings = glowSettings;
+        if (_glowSettings.IsEnabled)
+        {
+            _glowTween = new Tween(TimeSpan.FromSeconds(_glowSettings.DurationSeconds));
+            _glowTween.OnCompleted += OnGlowCycleCompleted;
+        }
+    }
+    
+    /// <summary>
+    /// Stops the glow effect
+    /// </summary>
+    public void StopGlow()
+    {
+        _glowSettings = new GlowSettings(false);
+        _glowTween = null;
+        _glowIntensity = 0f;
+    }
+    
+    /// <summary>
+    /// Gets whether the key is currently glowing
+    /// </summary>
+    public bool IsGlowing => _glowSettings.IsEnabled && _glowTween != null;
+    
+    private void UpdateGlow(GameTime gameTime)
+    {
+        if (!_glowSettings.IsEnabled || _glowTween == null)
+        {
+            _glowIntensity = 0f;
+            return;
+        }
+        
+        float progress = _glowTween.Update(gameTime);
+        _glowIntensity = EaseInOutSine(progress);
+    }
+    
+    private void OnGlowCycleCompleted()
+    {
+        if (_glowSettings.ShouldRepeat)
+        {
+            _glowTween.Reset();
+        }
+        else
+        {
+            StopGlow();
+        }
+    }
+    
+    /// <summary>
+    /// EaseInOutSine easing function from https://easings.net/#easeInOutSine
+    /// </summary>
+    private static float EaseInOutSine(float x)
+    {
+        return -(MathF.Cos(MathF.PI * x) - 1) / 2;
+    }
+    
     #endregion
 
 }

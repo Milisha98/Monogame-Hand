@@ -137,6 +137,12 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         if (State == BossState.Destroyed) return;
         if (State == BossState.Asleep) return;
 
+        // Update all keys (including glow animation)
+        foreach (var key in _keys)
+        {
+            key.Update(gameTime);
+        }
+
         // Boss update logic will go here when active
         // For now, just maintain active state
     }
