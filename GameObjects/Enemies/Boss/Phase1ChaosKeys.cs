@@ -6,12 +6,27 @@ using Hands.Core.Animation;
 
 namespace Hands.GameObjects.Enemies.Boss;
 
+public enum PhaseEscalationLevel
+{
+    Level1_TwoKeys,      // 0-30 seconds: 2 keys
+    Level2_ThreeKeys,    // 30-60 seconds: 3 keys
+    Level3_FourKeys      // 60-90 seconds: 4 keys
+}
+
 public class Phase1ChaosKeys : IBossPhase
 {
     private readonly TimeSpan _phaseDuration = TimeSpan.FromSeconds(90); // 90 seconds (1.5 minutes) for Phase 1
     private readonly TimeSpan _keySelectionInterval = TimeSpan.FromSeconds(5); // Select new key every 5 seconds
     
-    // Single glow workflow managed by the phase
+    // Phase escalation workflow stages
+    private readonly WorkflowStage<PhaseEscalationLevel>[] _escalationStages = 
+    [
+        new(PhaseEscalationLevel.Level1_TwoKeys, TimeSpan.FromSeconds(30)),    // 0-30s: 2 keys
+        new(PhaseEscalationLevel.Level2_ThreeKeys, TimeSpan.FromSeconds(30)),  // 30-60s: 3 keys
+        new(PhaseEscalationLevel.Level3_FourKeys, TimeSpan.FromSeconds(30))    // 60-90s: 4 keys
+    ];
+    
+    // Glow workflow template for individual keys
     private readonly WorkflowStage<KeyGlowState>[] _glowWorkflowStages = 
     [
         new(KeyGlowState.GlowUp, TimeSpan.FromSeconds(2.0)), // Glow up to full intensity
@@ -21,10 +36,11 @@ public class Phase1ChaosKeys : IBossPhase
     
     private Tween _phaseTween;
     private Tween _keySelectionTween;
-    private Workflow<KeyGlowState> _glowWorkflow;
+    private Workflow<PhaseEscalationLevel> _escalationWorkflow;
     private readonly Random _random = new();
-    private Key _currentGlowingKey = null;
-    private bool _keyWasInterrupted = false;
+    
+    // Active glowing keys and their workflows
+    private readonly List<GlowingKeyData> _activeGlowingKeys = [];
     
     // Boss movement
     private int _movementDirection = 1; // 1 for right, -1 for left
@@ -39,15 +55,15 @@ public class Phase1ChaosKeys : IBossPhase
         _keySelectionTween = new Tween(_keySelectionInterval);
         _keySelectionTween.OnCompleted += () => OnKeySelectionCompleted(keys.ToList());
         
-        // Initialize the glow workflow
-        _glowWorkflow = new Workflow<KeyGlowState>(_glowWorkflowStages);
-        _glowWorkflow.OnStateChanged += OnGlowStateChanged;
-        _glowWorkflow.OnCompleted += OnGlowCycleCompleted;
+        // Initialize the escalation workflow
+        _escalationWorkflow = new Workflow<PhaseEscalationLevel>(_escalationStages);
+        _escalationWorkflow.OnStateChanged += OnEscalationLevelChanged;
         
-        _currentGlowingKey = null;
+        // Clear any existing glowing keys
+        _activeGlowingKeys.Clear();
         
-        // Start with the first random key immediately
-        SelectRandomKeyToStartGlowing(keys.ToList());
+        // Start with the first set of keys based on initial escalation level (Level1_OneKey)
+        SelectKeysForCurrentLevel(keys.ToList());
     }
 
     public void Update(GameTime gameTime, Boss boss, IEnumerable<Key> keys)
@@ -55,14 +71,14 @@ public class Phase1ChaosKeys : IBossPhase
         // Update phase timer
         var phasePercent = _phaseTween?.Update(gameTime) ?? 0f;
         
+        // Update escalation workflow to handle difficulty progression
+        _escalationWorkflow?.Update(gameTime);
+        
         // Update key selection timer
         var keySelectionPercent = _keySelectionTween?.Update(gameTime) ?? 0f;
         
-        // Update glow workflow
-        _glowWorkflow?.Update(gameTime);
-        
-        // Update current key's glow intensity based on workflow state
-        UpdateCurrentKeyGlow();
+        // Update all active glowing keys and their individual workflows
+        UpdateActiveGlowingKeys(gameTime);
         
         // Update boss horizontal movement
         UpdateBossMovement(boss);
@@ -71,114 +87,173 @@ public class Phase1ChaosKeys : IBossPhase
     public void OnExit(Boss boss, IEnumerable<Key> keys)
     {
         // Stop all glowing when exiting phase 1
-        foreach (var key in keys)
+        foreach (var glowingKeyData in _activeGlowingKeys)
         {
-            key.GlowIntensity = 0f;
-            // Unregister all keys from collision detection
-            Global.World.CollisionManager.UnRegister(key);
+            glowingKeyData.Key.GlowIntensity = 0f;
+            // Unregister all active keys from collision detection
+            Global.World.CollisionManager.UnRegister(glowingKeyData.Key);
         }
-        _currentGlowingKey = null;
         
-        // Clean up tweens and workflow
+        // Clear active glowing keys list
+        _activeGlowingKeys.Clear();
+        
+        // Clean up tweens and workflows
         _phaseTween = null;
         _keySelectionTween = null;
-        _glowWorkflow = null;
+        _escalationWorkflow = null;
     }
 
     private void OnKeySelectionCompleted(List<Key> keys)
     {
-        // Select a new random key to glow
-        SelectRandomKeyToStartGlowing(keys);
+        // Select new keys based on current escalation level
+        SelectKeysForCurrentLevel(keys);
         
-        // Reset the interval timer for the next key
+        // Reset the interval timer for the next selection
         _keySelectionTween.Reset();
     }
 
-    private void SelectRandomKeyToStartGlowing(List<Key> keys)
+    private void SelectKeysForCurrentLevel(List<Key> keys)
     {
         if (keys.Count == 0)
             return;
         
-        // Clear current glowing key if any
-        if (_currentGlowingKey != null)
-        {
-            _currentGlowingKey.GlowIntensity = 0f;
-            // Unregister previous key from collision detection
-            Global.World.CollisionManager.UnRegister(_currentGlowingKey);
-        }
+        // Clear all current glowing keys
+        ClearAllActiveGlowingKeys();
         
-        // Select a random key
-        int randomIndex = _random.Next(keys.Count);
-        _currentGlowingKey = keys[randomIndex];
+        // Determine how many keys to select based on current escalation level
+        int keyCount = GetKeyCountForCurrentLevel();
+        
+        // Select random keys (ensuring no duplicates)
+        var selectedKeys = keys.OrderBy(x => _random.Next()).Take(keyCount).ToList();
+        
+        // Create glowing key data for each selected key
+        foreach (var key in selectedKeys)
+        {
+            StartKeyGlowing(key);
+        }
+    }
+    
+    private void StartKeyGlowing(Key key)
+    {
+        // Create a new workflow for this key
+        var workflow = new Workflow<KeyGlowState>(_glowWorkflowStages);
+        workflow.OnStateChanged += (state) => OnKeyGlowStateChanged(key, state);
+        workflow.OnCompleted += () => OnKeyGlowCompleted(key);
+        
+        // Create glowing key data
+        var glowingKeyData = new GlowingKeyData(key, workflow);
+        _activeGlowingKeys.Add(glowingKeyData);
         
         // Set up interruption callback
-        _currentGlowingKey.OnInterrupted = () => OnCurrentKeyInterrupted();
+        key.OnInterrupted = () => OnKeyInterrupted(key);
         
         // Register the key for collision detection during glow phase
-        Global.World.CollisionManager.Register(_currentGlowingKey);
+        Global.World.CollisionManager.Register(key);
         
-        // Reset the glow workflow to start from the beginning
-        _glowWorkflow.Reset();
-        _glowWorkflow.IsActive = true;
-        _keyWasInterrupted = false;
+        // Start the workflow
+        workflow.Reset();
+        workflow.IsActive = true;
+    }
+    
+    private int GetKeyCountForCurrentLevel()
+    {
+        return _escalationWorkflow?.CurrentState switch
+        {
+            PhaseEscalationLevel.Level1_TwoKeys => 2,
+            PhaseEscalationLevel.Level2_ThreeKeys => 3,
+            PhaseEscalationLevel.Level3_FourKeys => 4,
+            _ => 2 // Default fallback
+        };
+    }
+    
+    private void ClearAllActiveGlowingKeys()
+    {
+        foreach (var glowingKeyData in _activeGlowingKeys)
+        {
+            glowingKeyData.Key.GlowIntensity = 0f;
+            Global.World.CollisionManager.UnRegister(glowingKeyData.Key);
+        }
+        _activeGlowingKeys.Clear();
     }
 
-    private void UpdateCurrentKeyGlow()
+    private void UpdateActiveGlowingKeys(GameTime gameTime)
     {
-        if (_currentGlowingKey == null || _glowWorkflow == null || _keyWasInterrupted)
-            return;
-
-        // Calculate glow intensity based on current workflow state
-        float intensity = 0f;
-        if (_glowWorkflow.CurrentState == KeyGlowState.GlowUp)
+        // Update each active glowing key's workflow and intensity
+        foreach (var glowingKeyData in _activeGlowingKeys.ToList()) // ToList() to avoid modification during iteration
         {
-            intensity = EaseInOutSine(_glowWorkflow.CurrentPercent);
-        }
-        else if (_glowWorkflow.CurrentState == KeyGlowState.Shoot || _glowWorkflow.CurrentState == KeyGlowState.HoldGlow)
-        {
-            intensity = 1f; // Full glow during shoot and hold phases
-        }
-
-        _currentGlowingKey.GlowIntensity = intensity;
-    }
-
-    private void OnGlowStateChanged(KeyGlowState state)
-    {
-        if (state == KeyGlowState.Shoot && _currentGlowingKey != null)
-        {
-            _currentGlowingKey.ShootBulletFan();
+            if (glowingKeyData.WasInterrupted)
+                continue;
+            
+            // Update the key's individual workflow
+            glowingKeyData.Workflow.Update(gameTime);
+            
+            // IMPORTANT: Only update intensity if workflow is still active and not completed
+            // This prevents overriding the intensity after OnKeyGlowCompleted sets it to 0
+            if (!glowingKeyData.Workflow.IsComplete && glowingKeyData.Workflow.IsActive)
+            {
+                // Calculate glow intensity based on current workflow state
+                float intensity = CalculateGlowIntensity(glowingKeyData.Workflow);
+                glowingKeyData.Key.GlowIntensity = intensity;
+            }
         }
     }
-
-    private void OnGlowCycleCompleted()
+    
+    private float CalculateGlowIntensity(Workflow<KeyGlowState> workflow)
     {
-        // In Phase 1, keys don't repeat - they glow once and then wait for next selection
-        if (_currentGlowingKey != null)
+        return workflow.CurrentState switch
         {
-            _currentGlowingKey.GlowIntensity = 0f;
-            // Unregister key from collision detection
-            Global.World.CollisionManager.UnRegister(_currentGlowingKey);
+            KeyGlowState.GlowUp => EaseInOutSine(workflow.CurrentPercent),
+            KeyGlowState.Shoot or KeyGlowState.HoldGlow => 1f,
+            _ => 0f
+        };
+    }
+
+    private void OnEscalationLevelChanged(PhaseEscalationLevel newLevel)
+    {
+        // When escalation level changes, we don't immediately change the keys
+        // We wait for the next key selection interval to apply the new difficulty
+        // This provides a smooth transition between difficulty levels
+    }
+    
+    private void OnKeyGlowStateChanged(Key key, KeyGlowState state)
+    {
+        if (state == KeyGlowState.Shoot)
+        {
+            key.ShootBulletFan();
         }
     }
 
-    private void OnCurrentKeyInterrupted()
+    private void OnKeyGlowCompleted(Key key)
     {
-        _keyWasInterrupted = true;
+        // Key glow cycle completed - set intensity to 0 and unregister from collision
+        key.GlowIntensity = 0f;
+        Global.World.CollisionManager.UnRegister(key);
         
-        // Stop the workflow to prevent further updates
-        if (_glowWorkflow != null)
+        // Remove the completed key from the active glowing keys list
+        var completedKeyData = _activeGlowingKeys.FirstOrDefault(gkd => gkd.Key == key);
+        if (completedKeyData != null)
         {
-            _glowWorkflow.IsActive = false;
+            _activeGlowingKeys.Remove(completedKeyData);
         }
-        
-        // Unregister key from collision detection since it's no longer glowing
-        if (_currentGlowingKey != null)
+    }
+
+    private void OnKeyInterrupted(Key interruptedKey)
+    {
+        // Find the glowing key data for the interrupted key
+        var glowingKeyData = _activeGlowingKeys.FirstOrDefault(gkd => gkd.Key == interruptedKey);
+        if (glowingKeyData != null)
         {
-            Global.World.CollisionManager.UnRegister(_currentGlowingKey);
+            glowingKeyData.WasInterrupted = true;
+            
+            // Stop the workflow to prevent further updates
+            glowingKeyData.Workflow.IsActive = false;
+            
+            // Unregister key from collision detection since it's no longer glowing
+            Global.World.CollisionManager.UnRegister(interruptedKey);
+            
+            // Key intensity is already set to 0 by the Key.OnCollide method
+            // We just need to prevent the phase from overriding it
         }
-        
-        // Key intensity is already set to 0 by the Key.OnCollide method
-        // We just need to prevent the phase from overriding it
     }
 
     /// <summary>

@@ -158,6 +158,10 @@ internal class Mobile : IUpdate, IDraw, IMapPosition, ISleep, ICollision
     {
         if (State == MobileState.Destroyed) return;
 
+        // Only destroy mobile for destructive collision types, not walls or mounts
+        if (other.CollisionType == CollisionType.Wall || other.CollisionType == CollisionType.Mount)
+            return;
+
         // Add debugging to see exactly what's destroying mobiles
         System.Diagnostics.Debug.WriteLine($"[MOBILE DESTRUCTION] Mobile at {Center} destroyed by {other.CollisionType}");
 
