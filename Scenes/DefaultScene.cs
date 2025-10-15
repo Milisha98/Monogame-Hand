@@ -71,11 +71,11 @@ internal class DefaultScene : IScene
         Global.World.TurretManager.Draw(spriteBatch);
         Global.World.SideGunManager.Draw(spriteBatch);
         Global.World.MobileManager.Draw(spriteBatch);
-        Global.World.JetFighterManager.Draw(spriteBatch);
 
-        // Draw Boss (before projectiles so projectiles appear on top)
+        // Draw Boss (before fighters and projectiles)
         Global.World.Boss.Draw(spriteBatch);
         
+        Global.World.JetFighterManager.Draw(spriteBatch);
         Global.World.ProjectileManager.Draw(spriteBatch);
         Global.World.Player.Draw(spriteBatch);
         Global.World.ExplosionManager.Draw(spriteBatch);

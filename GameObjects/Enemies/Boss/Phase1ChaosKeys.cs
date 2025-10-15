@@ -8,9 +8,9 @@ namespace Hands.GameObjects.Enemies.Boss;
 
 public enum PhaseEscalationLevel
 {
-    Level1_TwoKeys,      // 0-30 seconds: 2 keys
-    Level2_ThreeKeys,    // 30-60 seconds: 3 keys
-    Level3_FourKeys      // 60-90 seconds: 4 keys
+    Level1,     // 0-30 seconds: 2 keys
+    Level2,     // 30-60 seconds: 3 keys
+    Level3      // 60-90 seconds: 4 keys
 }
 
 public class Phase1ChaosKeys : IBossPhase
@@ -21,9 +21,9 @@ public class Phase1ChaosKeys : IBossPhase
     // Phase escalation workflow stages
     private readonly WorkflowStage<PhaseEscalationLevel>[] _escalationStages = 
     [
-        new(PhaseEscalationLevel.Level1_TwoKeys, TimeSpan.FromSeconds(30)),    // 0-30s: 2 keys
-        new(PhaseEscalationLevel.Level2_ThreeKeys, TimeSpan.FromSeconds(30)),  // 30-60s: 3 keys
-        new(PhaseEscalationLevel.Level3_FourKeys, TimeSpan.FromSeconds(30))    // 60-90s: 4 keys
+        new(PhaseEscalationLevel.Level1, TimeSpan.FromSeconds(30)),    // 0-30s: 2 keys
+        new(PhaseEscalationLevel.Level2, TimeSpan.FromSeconds(30)),  // 30-60s: 3 keys
+        new(PhaseEscalationLevel.Level3, TimeSpan.FromSeconds(30))    // 60-90s: 4 keys
     ];
     
     // Glow workflow template for individual keys
@@ -159,9 +159,9 @@ public class Phase1ChaosKeys : IBossPhase
     {
         return _escalationWorkflow?.CurrentState switch
         {
-            PhaseEscalationLevel.Level1_TwoKeys => 2,
-            PhaseEscalationLevel.Level2_ThreeKeys => 3,
-            PhaseEscalationLevel.Level3_FourKeys => 4,
+            PhaseEscalationLevel.Level1 => 3,
+            PhaseEscalationLevel.Level2 => 4,
+            PhaseEscalationLevel.Level3 => 6,
             _ => 2 // Default fallback
         };
     }
