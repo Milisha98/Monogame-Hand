@@ -39,7 +39,8 @@ public class Boss : ILoadContent, IMapPosition, ISleep, IUpdate, IDraw
         _phaseHandlers = new Dictionary<BossPhase, IBossPhase>
         {
             { BossPhase.Phase1_ChaosKeys, new Phase1ChaosKeys() },
-            // Phase 2 and 3 will be added later
+            { BossPhase.Phase2_SpellShutdown, new Phase2SpellShutdown() },
+            // Phase 3 will be added later
         };
         
         // Start with Phase 1 (but don't activate until boss wakes up)

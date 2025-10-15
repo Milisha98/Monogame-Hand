@@ -1,13 +1,12 @@
-. Fast Forward to Boss
-
-. Boss fight
-	. Key Shadow (not quite right)
-	. Construction of Keyboard
-
-
+. Boss
+	. Phase 2
+	. Phase 3
 
 . Need to add a scoring system.
 . Player Health display
-
-
+. Music
+. Sound FX
+. Intro Screen
+. Win Screen
+. Lose Screen
 

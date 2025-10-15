@@ -13,7 +13,8 @@ using System.Linq;
 
 namespace Hands.GameObjects;
 internal class Player : IGameObject, IMapPosition, ICollision
-{    
+{
+    const int MAX_HEALTH = int.MaxValue;
     private readonly Tween _startTween;
     private Vector2 _shadowOffset = new Vector2(0, 0);
     private float _height = 0;
@@ -175,7 +176,7 @@ internal class Player : IGameObject, IMapPosition, ICollision
             int damage = 0; // Default damage
             damage = (int)projectile.Damage;
             TakeDamage(damage);
-            System.Diagnostics.Debug.WriteLine($"Player took {damage} damage from {other.CollisionType}. Health: {Health}/{MaxHealth}");
+            System.Diagnostics.Debug.WriteLine($"Player took {damage} damage from {other.CollisionType}. Health: {Health}/{MAX_HEALTH}");
 
         }
 
@@ -217,8 +218,7 @@ internal class Player : IGameObject, IMapPosition, ICollision
     public Vector2 MapPosition          { get; set; } = Global.World.GlobalPlayerPosition;
     public Vector2 Center               => MapPosition - Size48.Center; // Center of collision box
     public float MovementSpeed          { get; set; } = 0.35f;
-    public int Health                   { get; private set; } = 5; // Player starts with 5 hitpoints
-    public int MaxHealth                { get; private set; } = 5;
+    public int Health                   { get; private set; } = MAX_HEALTH;
     public bool IsAlive                 => Health > 0;
 
     public Texture2D Texture            { get; private set; }

@@ -54,7 +54,7 @@ A corrupted AI defense system shaped like a fragmented keyboard. The boss guards
 
 - Shooting the correct key progresses the sequence.
 
-- Optional: Incorrect shots will trigger retaliation of either:
+- Incorrect shots will trigger retaliation of either:
 	- Fire bullet pattern
 	- Spawn fighters, in random but not overlapping x coordinates, positioned just off the top of the screen.
 

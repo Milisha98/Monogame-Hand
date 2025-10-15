@@ -253,11 +253,11 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
 
     public void OnCollide(ICollision other)
     {
-        // Only react to player projectiles when glowing (can be interrupted)
-        if (other.CollisionType == CollisionType.ProjectilePlayer && GlowIntensity > 0)
+        // React to player projectiles when callback is set (let phase decide behavior)
+        if (other.CollisionType == CollisionType.ProjectilePlayer && OnInterrupted != null)
         {
-            // Set intensity to 0 immediately
-            GlowIntensity = 0f;
+            // Set intensity to 0 if key was glowing
+            if (GlowIntensity > 0) GlowIntensity = 0f;
             
             // Notify the phase that this key was interrupted
             OnInterrupted?.Invoke();
@@ -279,6 +279,29 @@ public class Key : IDraw, IMapPosition, ICollision, IUpdate
     
     #endregion
     
+    /// <summary>
+    /// Gets the primary character represented by this key
+    /// </summary>
+    public char Character
+    {
+        get
+        {
+            // Use Key2 if available (usually the unshifted character), otherwise Key1
+            string keyText = !string.IsNullOrEmpty(_keyInfo.Key2) ? _keyInfo.Key2 : _keyInfo.Key1;
+            return !string.IsNullOrEmpty(keyText) ? keyText[0] : '\0';
+        }
+    }
+    
+    /// <summary>
+    /// Gets the key text for matching (Key1 for special keys like Space, Alt)
+    /// </summary>
+    public string KeyText
+    {
+        get
+        {
+            return _keyInfo.Key1 ?? "";
+        }
+    }
     
     /// <summary>
     /// Gets or sets the glow intensity (0.0 to 1.0)
